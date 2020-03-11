@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/labelConnectStatus"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Connect status"
+        app:layout_constraintBottom_toTopOf="@id/connectBtn"
+        app:layout_constraintEnd_toStartOf="@id/connectStatusTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/connectStatusTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Disconnected"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/labelConnectStatus"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <Button
+        android:id="@+id/connectBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="connect"
+        app:layout_constraintTop_toBottomOf="@id/labelConnectStatus"
+        tools:ignore="MissingConstraints" />
+
+    <EditText
+        android:id="@+id/ipAddrTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="192.168.0.102"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/connectBtn"
+        app:layout_constraintTop_toBottomOf="@id/connectStatusTextView" />
+
+    <Button
+        android:id="@+id/sendMsgBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send to serv"
+        app:layout_constraintEnd_toStartOf="@id/sendMsgTextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/connectBtn" />
+
+    <EditText
+        android:id="@+id/sendMsgTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Hi, server"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/sendMsgBtn"
+        app:layout_constraintTop_toBottomOf="@id/ipAddrTextView" />
+
+    <TextView
+        android:id="@+id/statusBarTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Status Bar"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sendMsgBtn" />
+
+    <Button
+        android:id="@+id/recognizeBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Recognize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/statusBarTextView" />
+
+    <Button
+        android:id="@+id/addEmployeeBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Add new employee"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/recognizeBtn" />
+
+    <ImageView
+        android:id="@+id/imgView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:scaleType="centerCrop"
+        android:textAlignment="center"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/addEmployeeBtn"
+        tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
