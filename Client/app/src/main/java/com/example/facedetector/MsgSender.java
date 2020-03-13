@@ -1,34 +1,18 @@
 package com.example.facedetector;
 
-import android.content.Context;
 import android.util.Log;
+
+import com.example.facedetector.model.MsgListener;
+import com.example.facedetector.model.MsgType;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.NoRouteToHostException;
 import java.net.Socket;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
-
-enum MsgType {
-    RECOGNIZE,
-    EDIT,
-    ADD,
-    CHECK,
-    ADDITIONAL_PHOTO
-}
-enum DataType {
-    PHOTO()
-}
 
 public class MsgSender{
 
@@ -47,69 +31,88 @@ public class MsgSender{
     private final long CHECK_CONNECTION_INTERVAL = 5000;
     private boolean isConnected = false;
 
-    MsgSender(MsgListener msgListener) {
+    public MsgSender(MsgListener msgListener) {
         this.msgListener = msgListener;
         //connect();
-
     }
 
     public void disconnect() {
+        interruptConnectionThread();
         if (socket == null) {
             return;
         }
         try {
-            connectionThread.interrupt();
+            Log.e("PassSystem", "beforeSocket");
             socket.close();
             inputStream.close();
             outputStream.close();
+            isConnected = false;
+            Log.e("PassSystem", "afterSocket");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private boolean createSocket(String host, int port) throws IOException{
+    private boolean createSocket(String host, int port) throws IOException {
         socket = new Socket(host, port);
         inputStream = new DataInputStream(socket.getInputStream());
         outputStream = new DataOutputStream(socket.getOutputStream());
         return socket.isConnected();
     }
 
+    private void interruptConnectionThread() {
+        try {
+            if (connectionThread == null) {
+                return;
+            }
+            connectionThread.interrupt();
+            Log.e("PassSystem", "before");
+            connectionThread.join();
+            Log.e("PassSystem", "after");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void connect(String host, int port) {
         disconnect();
+        Log.e("PassSystem", "*");
         connectionThread = new Thread(() -> {
+            try {
+                Log.i("PassSystem", "Connecting to " + host + ":" + port);
+                isConnected = createSocket(host, port);
+                if (!isConnected) {
+                    msgListener.receiveMsg("Failed to connect " + host + ":" + port);
+                    return;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             int attempts = 1;
             while (!Thread.interrupted()) {
-                Log.e("PassSystem", "Interrupted1: " + Thread.interrupted());
-                Log.i("PassSystem", "Connect to " + host + ":" + port + " Attempt:" + attempts);
                 try {
-                    isConnected = createSocket(host, port);
-                    lastConnectionCheckTime = System.currentTimeMillis();
-                    if (isConnected) {
-                        checkConnectionStatus();
+                    if (!isConnected && !Thread.interrupted()) {
+                        Log.i("PassSystem", "Reconnect to " + host + ":" + port + " Attempt:" + attempts);
+                        isConnected = createSocket(host, port);
+                        lastConnectionCheckTime = System.currentTimeMillis();
+                    } else {
+                        checkConnectionUntilDisconnect();
                     }
-                } catch (NoRouteToHostException e) {
-                    msgListener.receiveMsg("Server " + host + " unreachable");
                 } catch (IOException e) {
-                    msgListener.receiveMsg("failed to connect to "  + host);
-                }
-
-                try {
-                    Thread.sleep(CHECK_CONNECTION_INTERVAL);
+                    e.printStackTrace();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
-                    break;
                 }
                 attempts++;
             }
-            Log.e("PassSystem", "Interrupted " + host);
         });
         connectionThread.start();
     }
 
-    private void checkConnectionStatus() {
+    private void checkConnectionUntilDisconnect() throws InterruptedException {
         while (!Thread.interrupted()) {
-            Log.e("PassSystem", "Interrupted2: " + Thread.interrupted());
             if (!isConnected) {
                 break;
             }
@@ -122,17 +125,10 @@ public class MsgSender{
                 } else {
                     isConnected = false;
                 }
-                Log.i("PassSystem", "(checking) isConnected:" + isConnected);
+                Log.i("PassSystem", "(checking) isConnected:");
             }
-            try {
-                Log.i("PassSystem", "Checking:sleeping");
-                Thread.sleep(CHECK_CONNECTION_INTERVAL);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                e.printStackTrace();
-                isConnected = false;
-                break;
-            }
+            Log.i("PassSystem", "Checking:sleeping");
+            Thread.sleep(CHECK_CONNECTION_INTERVAL);
         }
     }
 
@@ -143,9 +139,8 @@ public class MsgSender{
                 return;
             }
             Log.i("PassSystem", "Sending msg " + myMsg);
-            msgListener.receiveMsg("Sending msg to server...");
             sendMsgByParts(myMsg);
-            msgListener.receiveMsg("Waiting server's answer");
+            Log.i("PassSystem", "Waiting server's answer ");
             byte[] receivedBytes = receiveMsg();
             String receivedString = receivedBytes == null ? "Failed to receive msg" : new String(receivedBytes);
             msgListener.receiveMsg(receivedString);
