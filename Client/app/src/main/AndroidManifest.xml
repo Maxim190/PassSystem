@@ -16,9 +16,9 @@
             android:label="@string/title_activity_test__activity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".AddEmployee"
+            android:name=".view.AddEmployee"
             android:theme="@style/AppTheme.AddEmployee" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".view.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

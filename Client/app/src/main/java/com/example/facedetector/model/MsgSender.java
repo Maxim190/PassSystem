@@ -1,20 +1,24 @@
-package com.example.facedetector;
+package com.example.facedetector.model;
 
+import android.os.Build;
 import android.util.Log;
 
-import com.example.facedetector.model.MsgListener;
-import com.example.facedetector.model.MsgType;
+import androidx.annotation.RequiresApi;
+
+import com.example.facedetector.model.interfaces.MsgListener;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.NoRouteToHostException;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
 
 public class MsgSender{
+
+    private static MsgSender msgSender;
 
     private String host;
     private int port;
@@ -25,15 +29,33 @@ public class MsgSender{
 
     private Thread connectionThread;
 
-    private MsgListener msgListener;
+    private ArrayList<MsgListener> msgListeners;
 
     private long lastConnectionCheckTime;
     private final long CHECK_CONNECTION_INTERVAL = 5000;
     private boolean isConnected = false;
 
-    public MsgSender(MsgListener msgListener) {
-        this.msgListener = msgListener;
-        //connect();
+    public static MsgSender getIntent() {
+        if (msgSender == null) {
+            msgSender = new MsgSender();
+        }
+        return msgSender;
+    }
+
+    private MsgSender() {}
+
+    public void setListener(MsgListener listener) {
+        if (msgListeners == null) {
+            msgListeners = new ArrayList<>();
+        }
+        msgListeners.add(listener);
+    }
+
+    public void deleteListener(MsgListener listener) {
+        if (msgListeners == null) {
+            return;
+        }
+        msgListeners.remove(listener);
     }
 
     public void disconnect() {
@@ -74,6 +96,7 @@ public class MsgSender{
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void connect(String host, int port) {
         disconnect();
         Log.e("PassSystem", "*");
@@ -82,7 +105,7 @@ public class MsgSender{
                 Log.i("PassSystem", "Connecting to " + host + ":" + port);
                 isConnected = createSocket(host, port);
                 if (!isConnected) {
-                    msgListener.receiveMsg("Failed to connect " + host + ":" + port);
+                    sendMsgToListeners("Failed to connect " + host + ":" + port);
                     return;
                 }
             } catch (IOException e) {
@@ -104,6 +127,7 @@ public class MsgSender{
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
+                    break;
                 }
                 attempts++;
             }
@@ -132,10 +156,11 @@ public class MsgSender{
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public void exchangeMessages(TreeMap<MsgType, byte[]> myMsg) {
         new Thread(() -> {
             if (!isConnected) {
-                msgListener.receiveMsg("Couldn't send msg. There's no connection");
+                sendMsgToListeners("Couldn't send msg. There's no connection");
                 return;
             }
             Log.i("PassSystem", "Sending msg " + myMsg);
@@ -143,11 +168,11 @@ public class MsgSender{
             Log.i("PassSystem", "Waiting server's answer ");
             byte[] receivedBytes = receiveMsg();
             String receivedString = receivedBytes == null ? "Failed to receive msg" : new String(receivedBytes);
-            msgListener.receiveMsg(receivedString);
+            sendMsgToListeners(receivedString);
         }).start();
     }
 
-    private void sendMsg(byte[] msg, MsgType type, String additionalInf) throws IOException {
+    private synchronized void sendMsg(byte[] msg, MsgType type, String additionalInf) throws IOException {
         outputStream.write((additionalInf + type.toString() + ":" + msg.length).getBytes());
         outputStream.flush();
         try {
@@ -159,7 +184,7 @@ public class MsgSender{
         outputStream.flush();
     }
 
-    private boolean sendMsgByParts(TreeMap<MsgType, byte[]> msgParts) {
+    private synchronized boolean sendMsgByParts(TreeMap<MsgType, byte[]> msgParts) {
         String lastPartFlag = "FINAL";
         for(MsgType key : msgParts.keySet()) {
             try {
@@ -177,7 +202,7 @@ public class MsgSender{
         return true;
     }
 
-    private byte[] receiveMsg() {
+    private synchronized byte[] receiveMsg() {
         byte[] msg;
         try {
             lastConnectionCheckTime = System.currentTimeMillis();
@@ -201,6 +226,11 @@ public class MsgSender{
             e.printStackTrace();
         }
         return msg;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private void sendMsgToListeners(String msg) {
+        msgListeners.forEach(l -> l.receiveMsg(msg));
     }
 
     public boolean isConnected() {

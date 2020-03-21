@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".view.MainActivity">
 
     <TextView
         android:id="@+id/labelConnectStatus"
@@ -31,6 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="connect"
+        android:onClick="connectBtnClicked"
         app:layout_constraintTop_toBottomOf="@id/labelConnectStatus"
         tools:ignore="MissingConstraints" />
 
@@ -40,7 +41,7 @@
         android:layout_height="wrap_content"
         android:ems="10"
         android:inputType="textPersonName"
-        android:text="192.168.0.102"
+        android:text="192.168.0.101"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/connectBtn"
         app:layout_constraintTop_toBottomOf="@id/connectStatusTextView" />
@@ -50,6 +51,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send to serv"
+        android:onClick="sendMsgToServerBtnClicked"
         app:layout_constraintEnd_toStartOf="@id/sendMsgTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/connectBtn" />
@@ -78,6 +80,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Recognize"
+        android:onClick="recognizeBtnClicked"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/statusBarTextView" />
@@ -87,6 +90,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Add new employee"
+        android:onClick="addEmployeeBtnClicked"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/recognizeBtn" />

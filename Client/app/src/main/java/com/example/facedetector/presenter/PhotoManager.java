@@ -1,4 +1,4 @@
-package com.example.facedetector;
+package com.example.facedetector.presenter;
 
 import android.content.Intent;
 

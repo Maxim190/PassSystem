@@ -6,7 +6,7 @@
     app:startDestination="@id/addEmployee">
     <activity
         android:id="@+id/addEmployee"
-        android:name="com.example.facedetector.AddEmployee"
+        android:name="com.example.facedetector.view.AddEmployee"
         android:label="activity_add_employee"
         tools:layout="@layout/activity_add_employee" />
 </navigation>
