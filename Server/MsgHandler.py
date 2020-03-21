@@ -14,8 +14,8 @@ class MsgHandler:
 
     # MgStruct: [['MsgType', msg (byte[])], ['MsgType', msg (byte[])], ...]
     def handle(self, msg):
-        if msg is None:
-            return
+        if msg is None or len(msg) == 0:
+            return "empty msg received"
         parsed_msg = self.parse_msg(msg)
         if msg[0][0] == "RECOGNIZE":
             return self.recognize_face(parsed_msg["RECOGNIZE"])
@@ -39,7 +39,10 @@ class MsgHandler:
 
                 for item in parameters_array:
                     parsed_item = item.split('=')
-                    result[parsed_item[0]] = parsed_item[1]
+                    if len(parsed_item) == 1:
+                        result[parsed_item[0]] = parsed_item[0]
+                    else:
+                        result[parsed_item[0]] = parsed_item[1]
 
         return result
 
@@ -57,14 +60,14 @@ class MsgHandler:
     def add_employee(self, data):
         try:
             descriptor = self.instances.FACE_MANAGER.get_descriptor(data[self.PHOTO])
+            if descriptor is None:
+                return "Face is not detected"
             employee_id = self.instances.DATA_BASE.add_employee(
                 data[self.NAME], data[self.LAST_NAME], data[self.BIRTH], data[self.DEPARTMENT])
-
             photo_file_path = self.instances.FACE_MANAGER.photo_storage_path + str(employee_id) + ".jpg"
             self.instances.DATA_BASE.add_image_data(
                 employee_id, photo_file_path,
                 self.instances.FACE_MANAGER.descriptor_to_string(descriptor))
-
             self.instances.FACE_MANAGER.write_img(data[self.PHOTO], photo_file_path)
             return "Added new employee successfully"
         except IndexError:
