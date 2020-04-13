@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/add_employee"
-    android:gravity="center"
-    tools:context=".view.AddEmployee">
+    android:layout_width="match_parent"
+    android:background="@android:color/transparent"
+    tools:context=".ui.activities.employee_activity.EmployeeActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:background="@color/colorAccent"
         android:gravity="center"
-        tools:ignore="MissingConstraints">
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/imageView"
@@ -21,14 +26,14 @@
             android:layout_height="187dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/image" />
+            app:srcCompat="@drawable/image1" />
 
         <Button
             android:id="@+id/takePhotoBtn"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
+            android:onClick="takePhotoBtnClicked"
             android:text="Take a photo"
-            android:onClick="onTakePhotoBtnClicked"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
@@ -45,8 +50,8 @@
             android:id="@+id/lastNameEditText"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
-            android:inputType="text"
             android:hint="LAST_NAME"
+            android:inputType="text"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/nameEditText" />
 
@@ -54,8 +59,8 @@
             android:id="@+id/birthEditText"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
-            android:inputType="date"
             android:hint="BIRTH"
+            android:inputType="date"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/lastNameEditText" />
 
@@ -63,20 +68,40 @@
             android:id="@+id/departmentEditText"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
-            android:inputType="numberDecimal"
             android:hint="DEPARTMENT"
+            android:inputType="numberDecimal"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/birthEditText" />
 
         <Button
-            android:id="@+id/addEmployeeBtn"
+            android:id="@+id/button_add_employee"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
-            android:text="Add"
             android:onClick="addEmployeeBtnClicked"
+            android:text="Add"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/departmentEditText" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/button_edit_employee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="EDIT" />
+
+            <Button
+                android:id="@+id/button_delete_employee"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="DELETE" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
