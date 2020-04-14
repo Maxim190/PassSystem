@@ -12,13 +12,9 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".TEST_ACTIVITY"
-            android:label="@string/title_activity_test__activity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".view.AddEmployee"
+            android:name=".ui.activities.employee_activity.EmployeeActivity"
             android:theme="@style/AppTheme.AddEmployee" />
-        <activity android:name=".view.MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
