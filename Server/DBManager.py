@@ -1,21 +1,38 @@
 import pymysql
+from flask import Flask
+from flaskext.mysql import MySQL
+from pymysql.cursors import DictCursor
 
 
 class DB:
-
     def __init__(self):
         print("Connecting to database")
-        self.conn = pymysql.connect('localhost', 'root', 'root', 'pass_system')
+
+        app = Flask(__name__)
+        app.config['MYSQL_DATABASE_USER'] = 'root'
+        app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
+        app.config['MYSQL_DATABASE_DB'] = 'pass_system'
+        app.config['MYSQL_DATABASE_HOST'] = 'localhost'
+        mysql = MySQL(cursorclass=DictCursor)
+        mysql.init_app(app)
+
+        self.conn = mysql.connect()
         self.cursor = self.conn.cursor()
-        self.photo_storage_path = "\\photos\\"
+
         print("Connected to database")
 
-    def get_next_employee_id(self):
-        query = 'SELECT MAX(id) FROM employees'
-        self.cursor.execute(query)
-        max_id = self.cursor.fetchone()[0]
+        # print("Connecting to database")
+        # self.conn = pymysql.connect('localhost', 'root', 'root', 'pass_system')
+        # self.cursor = self.conn.cursor()
+        # self.photo_storage_path = "\\photos\\"
+        # print("Connected to database")
 
-        if max_id == None:
+    def get_next_employee_id(self):
+        query = 'SELECT MAX(id) as id FROM employees'
+        self.cursor.execute(query)
+        max_id = self.cursor.fetchone()["id"]
+
+        if max_id is None:
             return 1
         else:
             return int(max_id) + 1
@@ -29,13 +46,18 @@ class DB:
         return int(id)
 
     def get_employee_by_id(self, id):
-        query = "SELECT * FROM employees WHERE id=" + str(id)
+        query = "SELECT id, name, last_name, " \
+                "DATE_FORMAT(birth, \"%y-%m-%d\") AS birth, department_id " \
+                "FROM employees " \
+                "WHERE id=" + str(id)
         self.cursor.execute(query)
 
         return self.cursor.fetchone()
 
     def get_all_employees(self):
-        self.cursor.execute("SELECT * FROM employees")
+        self.cursor.execute("SELECT id, name, last_name, "
+                            "DATE_FORMAT(birth, \"%y-%m-%d\") AS birth, department_id "
+                            "FROM employees")
 
         return self.cursor.fetchall()
 
@@ -59,7 +81,7 @@ class DB:
         self.cursor.execute(query)
         self.conn.commit()
 
-    def get_image_inf(self, id):
+    def get_image_data(self, id):
         query = 'SELECT * FROM images_data WHERE id=' + str(id)
         self.cursor.execute(query)
 

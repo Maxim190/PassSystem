@@ -10,7 +10,7 @@ class FaceManager:
         global PHOTO_STORAGE_PATH
         print("FaceManager starting...")
         self.sp = dlib.shape_predictor("files/shape_predictor_68_face_landmarks.dat")
-        self.facerec = dlib.face_recognition_model_v1("files/dlib_face_recognition_resnet_model_v1.dat")
+        self.face_rec = dlib.face_recognition_model_v1("files/dlib_face_recognition_resnet_model_v1.dat")
         self.detector = dlib.get_frontal_face_detector()
         self.desc_parser = ":"
         self.photo_storage_path = "photos/"
@@ -42,7 +42,7 @@ class FaceManager:
         for k, d in enumerate(dets):
             shape = self.sp(img, d)
 
-        face_descriptor = self.facerec.compute_face_descriptor(img, shape)
+        face_descriptor = self.face_rec.compute_face_descriptor(img, shape)
         return face_descriptor
 
     def descriptor_to_string(self, descriptor):
@@ -63,6 +63,9 @@ class FaceManager:
             file.flush()
 
     def read_img(self, file_path):
-        with open(file_path, "r") as file:
+        print("YES")
+        with open(file_path, "rb") as file:
             return file.read()
 
+    def build_photo_path(self, photo_name):
+        return self.photo_storage_path + str(photo_name) + ".jpg"

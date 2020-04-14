@@ -1,82 +1,176 @@
 import re
+import json
+from enum import Enum
+
+
+class RequestType:
+    RECOGNIZE = "RECOGNIZE"
+    ADD = "ADD"
+    EDIT = "EDIT"
+    DELETE = "DELETE"
+    CHECK = "CHECK"
+
+
+class DataType:
+    PHOTO = "PHOTO"
+    NAME = "name"
+    LAST_NAME = "lastName"
+    BIRTH = "birth"
+    DEPARTMENT_ID = "departmentId"
+    ID = "id"
+    CODE = "code"
+
+
+class Code:
+    SUCCESS = "1"
+    ERROR = "2"
+
+
+def error_msg(msg_type, msg):
+    return {msg_type: msg, DataType.CODE: Code.ERROR}
+
+
+def success_msg(msg_type, msg):
+    return {msg_type: msg, DataType.CODE: Code.SUCCESS}
 
 
 class MsgHandler:
-    PHOTO = "ADDITIONAL_PHOTO"
-    NAME = "NAME"
-    LAST_NAME = "LASTNAME"
-    BIRTH = "BIRTH"
-    DEPARTMENT = "DEPARTMENT"
-    ID = "ID"
 
     def __init__(self, instances):
         self.instances = instances
 
-    # MgStruct: [['MsgType', msg (byte[])], ['MsgType', msg (byte[])], ...]
-    def handle(self, msg):
-        if msg is None or len(msg) == 0:
+    def handle(self, request):
+        if request is None or len(request) == 0:
             return "empty msg received"
-        parsed_msg = self.parse_msg(msg)
-        if msg[0][0] == "RECOGNIZE":
-            return self.recognize_face(parsed_msg["RECOGNIZE"])
-        elif msg[0][0] == "ADD":
-            print("ADD: " + str(parsed_msg))
-            return self.add_employee(parsed_msg)
-        elif msg[0][0] == "EDIT":
-            print("EDIT: " + str(parsed_msg))
-            return "edited"
-        elif msg[0][0] == "CHECK":
-            return str(parsed_msg)
+        request_header = list(request.keys())[0]
+        print("REQUEST: " + str(request))
 
-    def parse_msg(self, raw_msg):
-        result = {}
-        for i in range(0, len(raw_msg)):
-            if raw_msg[i][0] == "ADDITIONAL_PHOTO" or raw_msg[i][0] == "RECOGNIZE":
-                result[raw_msg[i][0]] = raw_msg[i][1]
-            else:
-                processed_str = re.sub("[{}b'\"\s]", "", str(raw_msg[i][1]))
-                parameters_array = processed_str.split(',')
+        if request_header == RequestType.CHECK:
+            return self.check_request()
+        elif request_header == RequestType.RECOGNIZE:
+            return self.recognize_face(request)
+        elif request_header == RequestType.ADD:
+            return self.add_employee(request)
+        elif request_header == RequestType.EDIT:
+            return self.edit_employee(request)
+        elif request_header == RequestType.DELETE:
+            return self.delete_employee(request)
 
-                for item in parameters_array:
-                    parsed_item = item.split('=')
-                    if len(parsed_item) == 1:
-                        result[parsed_item[0]] = parsed_item[0]
-                    else:
-                        result[parsed_item[0]] = parsed_item[1]
+    def check_request(self):
+        return {RequestType.CHECK: "RESPONSE", DataType.CODE: Code.SUCCESS}
 
-        return result
+    def recognize_face(self, data):
+        photo_bytes = data[RequestType.RECOGNIZE]
+        if photo_bytes is None or len(photo_bytes) == 0:
+            return error_msg(RequestType.RECOGNIZE, "Photo did not come completely")
 
-    def recognize_face(self, photo):
-        data = self.instances.DATA_BASE.get_all_img_data()
-        photo_descriptor = self.instances.FACE_MANAGER.get_descriptor(photo)
+        photo_descriptor = self.instances \
+            .FACE_MANAGER \
+            .get_descriptor(photo_bytes)
+
         if photo_descriptor is None:
-            return "Face not found"
-        for item in data:
-            item_descriptor = [float(i) for i in item[2].split(':')]
+            return error_msg(RequestType.RECOGNIZE, "Face not found")
+
+        all_images_data = self.instances \
+            .DATA_BASE \
+            .get_all_img_data()
+
+        for item in all_images_data:
+            item_descriptor = [float(i) for i in item["descriptor"].split(':')]
+
             if self.instances.FACE_MANAGER.is_one_person(item_descriptor, photo_descriptor):
-                return str(self.instances.DATA_BASE.get_employee_by_id(item[0]))
-        return "There is no face like that in base"
+                return {
+                    RequestType.RECOGNIZE:
+                        self.instances.DATA_BASE.get_employee_by_id(item["id"]),
+                    DataType.PHOTO:
+                        self.instances.FACE_MANAGER.read_img(
+                            self.instances.DATA_BASE.get_image_data(item["id"])["photo"]),
+                    DataType.CODE: Code.SUCCESS
+                }
 
-    def add_employee(self, data):
+        return error_msg(RequestType.RECOGNIZE, "There is no face like that in base")
+
+    def add_employee(self, request):
         try:
-            descriptor = self.instances.FACE_MANAGER.get_descriptor(data[self.PHOTO])
+            descriptor = self.instances \
+                .FACE_MANAGER \
+                .get_descriptor(request[DataType.PHOTO])
+
             if descriptor is None:
-                return "Face is not detected"
-            employee_id = self.instances.DATA_BASE.add_employee(
-                data[self.NAME], data[self.LAST_NAME], data[self.BIRTH], data[self.DEPARTMENT])
-            photo_file_path = self.instances.FACE_MANAGER.photo_storage_path + str(employee_id) + ".jpg"
-            self.instances.DATA_BASE.add_image_data(
-                employee_id, photo_file_path,
-                self.instances.FACE_MANAGER.descriptor_to_string(descriptor))
-            self.instances.FACE_MANAGER.write_img(data[self.PHOTO], photo_file_path)
-            return "Added new employee successfully"
-        except IndexError:
-            return "Not enough data for adding new employee"
+                return error_msg(RequestType.ADD, "Face is not detected")
 
-    def edit_employee(self, data):
-        try:
-            self.instances.DATA_BASE.edit_employee(
-                data[self.ID], data[self.NAME], data[self.LAST_NAME], data[self.BIRTH], data[self.DEPARTMENT])
-            return "Edited employee successfully"
+            data = json.loads(request[RequestType.ADD])
+            employee_id = self.instances \
+                .DATA_BASE \
+                .add_employee(
+                data[DataType.NAME],
+                data[DataType.LAST_NAME],
+                data[DataType.BIRTH],
+                data[DataType.DEPARTMENT_ID])
+
+            photo_file_path = self.instances.FACE_MANAGER \
+                .build_photo_path(employee_id)
+
+            self.instances \
+                .DATA_BASE \
+                .add_image_data(
+                employee_id,
+                photo_file_path,
+                self.instances.FACE_MANAGER
+                    .descriptor_to_string(descriptor))
+
+            self.instances.FACE_MANAGER \
+                .write_img(request[DataType.PHOTO], photo_file_path)
+
+            return {
+                RequestType.ADD: employee_id,
+                DataType.CODE: Code.SUCCESS
+            }
         except IndexError:
-            return "Not enough data for editing"
+            return error_msg(RequestType.ADD, "Not enough data for adding new employee")
+
+    def edit_employee(self, request):
+        try:
+            data = json.loads(request[RequestType.EDIT])
+            self.instances.DATA_BASE.edit_employee(
+                data[DataType.ID],
+                data[DataType.NAME],
+                data[DataType.LAST_NAME],
+                data[DataType.BIRTH],
+                data[DataType.DEPARTMENT_ID])
+
+            descriptor = self.instances \
+                .FACE_MANAGER \
+                .get_descriptor(request[DataType.PHOTO])
+
+            response_msg = "Edited employee successfully."
+
+            if descriptor is not None:
+                photo_file_path = self.instances.FACE_MANAGER \
+                    .build_photo_path(data[DataType.ID])
+
+                self.instances \
+                    .DATA_BASE \
+                    .edit_img_data(
+                    data[DataType.ID],
+                    photo_file_path,
+                    self.instances.FACE_MANAGER.descriptor_to_string(descriptor))
+
+                self.instances.FACE_MANAGER \
+                    .write_img(request[DataType.PHOTO], photo_file_path)
+            else:
+                response_msg += "Failed to edit photo: no face detected"
+
+            return {RequestType.EDIT: response_msg,
+                    DataType.CODE: Code.SUCCESS}
+        except IndexError:
+            return error_msg(RequestType.EDIT, "Not enough data for editing")
+
+    def delete_employee(self, request):
+        id = json.loads(request[RequestType.DELETE])
+
+        self.instances.DATA_BASE.del_image_data(id)
+        self.instances.DATA_BASE.del_employee(id)
+
+        return {RequestType.DELETE: "Employee deleted successfully",
+                DataType.CODE: Code.SUCCESS}
