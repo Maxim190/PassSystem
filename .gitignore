@@ -1,7 +1,8 @@
 ################CLIENT####################
 
+*.iml
+Client/app/build
 Client/.gradle
-Client/*.iml
 Client/local.properties
 Client/*.idea
 Client/.DS_Store
