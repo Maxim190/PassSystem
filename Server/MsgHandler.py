@@ -79,16 +79,29 @@ class MsgHandler:
             item_descriptor = [float(i) for i in item["descriptor"].split(':')]
 
             if self.instances.FACE_MANAGER.is_one_person(item_descriptor, photo_descriptor):
-                return {
-                    RequestType.RECOGNIZE:
-                        self.instances.DATA_BASE.get_employee_by_id(item["id"]),
-                    DataType.PHOTO:
-                        self.instances.FACE_MANAGER.read_img(
-                            self.instances.DATA_BASE.get_image_data(item["id"])["photo"]),
-                    DataType.CODE: Code.SUCCESS
-                }
+                return self.build_response_with_employee_data(item["id"])
 
         return error_msg(RequestType.RECOGNIZE, "There is no face like that in base")
+
+    def build_response_with_employee_data(self, employee_id):
+        return {
+            RequestType.RECOGNIZE:
+                self.instances.DATA_BASE.get_employee_by_id(employee_id),
+            DataType.PHOTO:
+                self.instances.FACE_MANAGER.read_img(
+                    self.instances.DATA_BASE.get_image_data(employee_id)["photo"]),
+            DataType.CODE: Code.SUCCESS
+        }
+
+    def find_employee(self, descriptor_on_check):
+        all_images_data = self.instances \
+            .DATA_BASE \
+            .get_all_img_data()
+
+        for item in all_images_data:
+            base_descriptor = [float(i) for i in item["descriptor"].split(':')]
+            if self.instances.FACE_MANAGER.is_one_person(base_descriptor, descriptor_on_check):
+                return item[DataType.ID]
 
     def add_employee(self, request):
         try:
@@ -97,7 +110,12 @@ class MsgHandler:
                 .get_descriptor(request[DataType.PHOTO])
 
             if descriptor is None:
-                return error_msg(RequestType.ADD, "Face is not detected")
+                return error_msg(RequestType.ADD, "Face is not detected on the photo")
+
+            existing_employee_id = self.find_employee(descriptor)
+            if existing_employee_id is not None:
+                print("Impossible to add employee: already exists")
+                return self.build_response_with_employee_data(existing_employee_id)
 
             data = json.loads(request[RequestType.ADD])
             employee_id = self.instances \
@@ -169,8 +187,11 @@ class MsgHandler:
     def delete_employee(self, request):
         id = json.loads(request[RequestType.DELETE])
 
+        photo_path = self.instances.DATA_BASE.get_image_data(id)["photo"]
+
         self.instances.DATA_BASE.del_image_data(id)
         self.instances.DATA_BASE.del_employee(id)
+        self.instances.FACE_MANAGER.delete_photo(photo_path)
 
         return {RequestType.DELETE: "Employee deleted successfully",
                 DataType.CODE: Code.SUCCESS}
