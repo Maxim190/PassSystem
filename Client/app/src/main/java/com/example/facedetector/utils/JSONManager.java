@@ -1,5 +1,8 @@
 package com.example.facedetector.utils;
 
+import android.util.Log;
+
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -7,12 +10,25 @@ import java.util.Map;
 
 public class JSONManager {
 
+    public static String parseToStr(byte[] data) {
+        Log.e("PassSystem", "JsonManager before " + new String(data));
+        Log.e("PassSystem", "JsonManager after " + new String(data).replaceAll("[\"\']", ""));
+        return new String(data).replaceAll("[\"\']", "");
+    }
+
+    public static Map<String, String> parseToMap(byte[] data) {
+        String str = new String(data);
+        if (str.contains("{")) {
+            return parse(str);
+        }
+        return Collections.emptyMap();
+    }
+
     public static Map<String, String> parse(String str) {
         if (str == null || str.isEmpty()) {
             return null;
         }
-        //Log.e("PassSystem", "JSON_MANAGER PARSE: " + str);
-        String precessedStr = str.replaceAll("[\\[\\]{}\\s]", "");
+        String precessedStr = str.replaceAll("[\\[\\]{}\\s\"\']", "");
         String[] pairsArray = precessedStr.split(",");
 
         Map<String, String> result = new LinkedHashMap<>();
@@ -25,7 +41,6 @@ public class JSONManager {
             String value = pair[1].replaceAll("[\"']", "");
             result.put(key, value);
         }
-        //result.forEach((key, value)->Log.e("PassSystem", "PARSED: " + key + " " + value));
         return result;
     }
 
