@@ -9,6 +9,7 @@ public interface HomeInterface {
         Context getContext();
         void displayText(String text);
         void openEmployeeActivity(Bundle bundle);
+        void setViewEnabled(boolean value);
     }
 
     interface Presenter {

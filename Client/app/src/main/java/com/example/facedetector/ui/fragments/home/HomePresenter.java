@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.facedetector.utils.Bundlebuilder;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.model.MsgListener;
@@ -64,24 +65,23 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener {
         byte[] byteArray = stream.toByteArray();
 
         model.recognizeEmployee(byteArray, this);
+        currentView.setViewEnabled(false);
     }
 
     @Override
     public void callback(Map<String, byte[]> data) {
-        Bundle bundle = new Bundle();
-        for(String key: data.keySet()) {
-            if(Consts.DATA_TYPE_PHOTO.equals(key)) {
-                bundle.putByteArray(key, data.get(key));
-            } else {
-                byte[] bytes = data.get(key);
-                if (bytes != null) {
-                    Map<String, String> array = JSONManager.parse(new String(bytes));
-                    for (String item: array.keySet()) {
-                        bundle.putString(item, array.get(item));
-                    }
-                }
-            }
+        currentView.setViewEnabled(true);
+
+        if (data.containsKey(Consts.DATA_TYPE_CODE)
+                && Consts.CODE_ERROR.equals(JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE)))) {
+
+            String errorMsg = JSONManager.parseToStr(data.values().iterator().next());
+            currentView.displayText(errorMsg);
+            return;
         }
+
+        Bundle bundle = Bundlebuilder.build(data);
+        bundle.keySet().forEach(key -> Log.e("PassSystem", "BUNDLE HOME_PRESENTER " + key + " " + bundle.get(key)));
         bundle.putInt(EmployeeActivity.BUNDLE_MODE_KEY,
                 EmployeeActivity.ACTIVITY_EDIT_MODE);
         currentView.openEmployeeActivity(bundle);

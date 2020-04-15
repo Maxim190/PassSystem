@@ -1,22 +1,21 @@
 package com.example.facedetector.ui.fragments.home;
 
 import android.app.ActivityOptions;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.example.facedetector.MainActivity;
 import com.example.facedetector.R;
 import com.example.facedetector.ui.activities.employee_activity.EmployeeActivity;
-import com.example.facedetector.MainActivity;
 
 import java.util.Objects;
 
@@ -26,6 +25,10 @@ public class HomeFragment extends Fragment implements HomeInterface.View{
 
     private static final int CAMERA_REQUEST = 1888;
     private static final int ACTIVITY_CLOSED = 1000;
+
+    private Button recognizeBtn;
+    private Button addBtn;
+
     private HomeInterface.Presenter presenter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -34,10 +37,10 @@ public class HomeFragment extends Fragment implements HomeInterface.View{
         View root = inflater.inflate(R.layout.home_fragment, container, false);
         presenter = new HomePresenter(this);
 
-        Button addBtn = root.findViewById(R.id.add_employee_btn);
+        addBtn = root.findViewById(R.id.add_employee_btn);
         addBtn.setOnClickListener(this::addBtnClicked);
 
-        Button recognizeBtn = root.findViewById(R.id.recognize_btn);
+        recognizeBtn = root.findViewById(R.id.recognize_btn);
         recognizeBtn.setOnClickListener(this::recognizeBtnClicked);
 
         return root;
@@ -93,10 +96,17 @@ public class HomeFragment extends Fragment implements HomeInterface.View{
         });
     }
 
+    @Override
+    public void setViewEnabled(boolean value) {
+        Objects.requireNonNull(getActivity()).runOnUiThread(()-> {
+            addBtn.setEnabled(value);
+            recognizeBtn.setEnabled(value);
+        });
+    }
+
     public void displayText(String text) {
         Objects.requireNonNull(getActivity()).runOnUiThread(() -> {
-            Log.e("PassSystem", text);
-            Toast.makeText(getActivity(), text, Toast.LENGTH_LONG).show();
+            new AlertDialog.Builder(getActivity()).setMessage(text).show();
         });
     }
 }
