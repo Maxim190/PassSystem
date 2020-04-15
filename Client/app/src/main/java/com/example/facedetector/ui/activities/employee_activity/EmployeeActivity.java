@@ -1,9 +1,9 @@
 package com.example.facedetector.ui.activities.employee_activity;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,12 +11,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.facedetector.utils.Consts;
 import com.example.facedetector.R;
 import com.example.facedetector.utils.PhotoManager;
 
@@ -36,7 +34,7 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     private Button buttonDeleteEmployee;
 
     private EmployeePresenter presenter;
-    private Bundle bundle;
+    private AlertDialog.Builder dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,15 +60,17 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     }
 
     public void setActivityMode(int mode) {
-        if (mode == ACTIVITY_EDIT_MODE) {
-            buttonAddEmployee.setVisibility(View.INVISIBLE);
-            buttonEditEmployee.setVisibility(View.VISIBLE);
-            buttonDeleteEmployee.setVisibility(View.VISIBLE);
-        } else {
-            buttonAddEmployee.setVisibility(View.VISIBLE);
-            buttonEditEmployee.setVisibility(View.INVISIBLE);
-            buttonDeleteEmployee.setVisibility(View.INVISIBLE);
-        }
+        runOnUiThread(()-> {
+            if (mode == ACTIVITY_EDIT_MODE) {
+                buttonAddEmployee.setVisibility(View.INVISIBLE);
+                buttonEditEmployee.setVisibility(View.VISIBLE);
+                buttonDeleteEmployee.setVisibility(View.VISIBLE);
+            } else {
+                buttonAddEmployee.setVisibility(View.VISIBLE);
+                buttonEditEmployee.setVisibility(View.INVISIBLE);
+                buttonDeleteEmployee.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     public void addBtnClicked(View view) {
@@ -149,8 +149,17 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     }
 
     @Override
+    public void setActivityEnabled(boolean value) {
+        runOnUiThread(()-> {
+            buttonAddEmployee.setEnabled(value);
+            buttonEditEmployee.setEnabled(value);
+            buttonDeleteEmployee.setEnabled(value);
+        });
+    }
+
+    @Override
     public void setName(String name) {
-        fieldName.setText(name);
+        runOnUiThread(()->fieldName.setText(name));
     }
 
     @Override
@@ -160,28 +169,30 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
 
     @Override
     public void setBirthDate(String birthDate) {
-        fieldBirth.setText(birthDate);
+        runOnUiThread(()->fieldBirth.setText(birthDate));
     }
 
     @Override
     public void setDepartmentId(String departmentId) {
-        fieldDepartment.setText(departmentId);
+        runOnUiThread(()->fieldDepartment.setText(departmentId));
     }
 
     @Override
     public void setPhoto(Bitmap bitmap) {
-        imageView.setImageBitmap(bitmap);
+        runOnUiThread(() -> imageView.setImageBitmap(bitmap));
     }
 
     @Override
     public void displayMsg(String msg) {
-        runOnUiThread(()->
-            Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
-        );
+        runOnUiThread(()-> {
+            dialog = new AlertDialog.Builder(this);
+            dialog.setMessage(msg);
+            dialog.show();
+        });
     }
 
     @Override
     public void closeActivity() {
-        finish();
+        runOnUiThread(this::finish);
     }
 }

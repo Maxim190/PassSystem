@@ -10,6 +10,7 @@ public interface EmployeeViewContract {
         String getDepartmentId();
         Bitmap getPhoto();
 
+        void setActivityEnabled(boolean value);
         void displayMsg(String msg);
         void closeActivity();
         void setActivityMode(int mode);

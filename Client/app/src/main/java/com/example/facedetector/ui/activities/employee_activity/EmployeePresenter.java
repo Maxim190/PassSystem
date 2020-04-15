@@ -11,7 +11,9 @@ import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.model.employee.IndexedEmployee;
 import com.example.facedetector.model.employee.NotIndexedEmployee;
+import com.example.facedetector.utils.Bundlebuilder;
 import com.example.facedetector.utils.Consts;
+import com.example.facedetector.utils.JSONManager;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
@@ -26,10 +28,12 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
 
     public EmployeePresenter(EmployeeActivity currentView, Bundle bundle) {
         this.currentView = currentView;
-        fillViewFields(bundle);
-        indexedEmployee = new IndexedEmployee(
-                getEmployeeDataFromView(), bundle.getString(Consts.DATA_TYPE_ID));
-        currentView.setActivityMode(bundle.getInt(EmployeeActivity.BUNDLE_MODE_KEY));
+        if (bundle != null) {
+            fillViewFields(bundle);
+            indexedEmployee = new IndexedEmployee(
+                    getEmployeeDataFromView(), bundle.getString(Consts.DATA_TYPE_ID));
+            currentView.setActivityMode(bundle.getInt(EmployeeActivity.BUNDLE_MODE_KEY));
+        }
     }
 
     private void fillViewFields(Bundle bundle) {
@@ -56,6 +60,9 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
     }
 
     private byte[] convertBitmapToArray(Bitmap bitmap) {
+        if (bitmap == null) {
+            return new byte[0];
+        }
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         return stream.toByteArray();
@@ -69,6 +76,7 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
             return;
         }
         model.addEmployee(notIndexedEmployee, this);
+        currentView.setActivityEnabled(false);
     }
 
     @Override
@@ -79,6 +87,7 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
             return;
         }
         model.editEmployee(new IndexedEmployee(notIndexedEmployee, indexedEmployee.getId()), this);
+        currentView.setActivityEnabled(false);
     }
 
     @Override
@@ -89,35 +98,45 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
             return;
         }
         model.deleteEmployee(id, this);
+        currentView.setActivityEnabled(false);
     }
 
     @Override
     public void callback(Map<String, byte[]> data) {
+        currentView.setActivityEnabled(true);
+
         if (data.isEmpty() || !data.containsKey(Consts.DATA_TYPE_CODE)) {
             currentView.displayMsg("Failed receiving msg from server");
             return;
         }
-        String code = new String(data.get(Consts.DATA_TYPE_CODE));
-        if (code.equals(Consts.CODE_ERROR)) {
+        String code = JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE));
+        if (Consts.CODE_ERROR.equals(code)) {
             currentView.displayMsg(new String(data.values().iterator().next()));
             return;
         }
 
         String msgType = data.keySet().iterator().next();
         switch (msgType) {
+            case Consts.MSG_TYPE_RECOGNIZE: {
+                currentView.displayMsg("Employee has already existed");
+                fillViewFields(Bundlebuilder.build(data));
+                currentView.setActivityMode(EmployeeActivity.ACTIVITY_EDIT_MODE);
+                break;
+            }
             case Consts.MSG_TYPE_ADD: {
-                String id = new String(data.get(Consts.MSG_TYPE_ADD));
+                String id = JSONManager.parseToStr(data.get(Consts.MSG_TYPE_ADD));
                 indexedEmployee = new IndexedEmployee(getEmployeeDataFromView(), id);
                 currentView.displayMsg("Added new employee successfully");
                 currentView.setActivityMode(EmployeeActivity.ACTIVITY_EDIT_MODE);
                 break;
             }
             case  Consts.MSG_TYPE_DELETE: {
-                currentView.displayMsg(new String(data.get(Consts.MSG_TYPE_DELETE)));
+                currentView.displayMsg(JSONManager.parseToStr(data.get(Consts.MSG_TYPE_DELETE)));
                 currentView.closeActivity();
+                break;
             }
             case  Consts.MSG_TYPE_EDIT: {
-                currentView.displayMsg(new String(data.get(Consts.MSG_TYPE_EDIT)));
+                currentView.displayMsg(JSONManager.parseToStr(data.get(Consts.MSG_TYPE_EDIT)));
             }
         }
     }
