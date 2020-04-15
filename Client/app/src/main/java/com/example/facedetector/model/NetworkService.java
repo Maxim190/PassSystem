@@ -33,7 +33,6 @@ public class NetworkService {
     private Thread connectionThread;
 
     private long lastConnectionCheckTime;
-    private final long CHECK_CONNECTION_INTERVAL = 5000;
     private boolean isConnected = false;
 
     public static NetworkService getIntent() {
@@ -51,12 +50,10 @@ public class NetworkService {
             return;
         }
         try {
-            Log.e("PassSystem", "beforeSocket");
             socket.close();
             inputStream.close();
             outputStream.close();
             isConnected = false;
-            Log.e("PassSystem", "afterSocket");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -64,6 +61,7 @@ public class NetworkService {
 
     private boolean createSocket(String host, int port) throws IOException {
         socket = new Socket(host, port);
+        socket.setSoTimeout(10000);
         inputStream = new DataInputStream(socket.getInputStream());
         outputStream = new DataOutputStream(socket.getOutputStream());
         return socket.isConnected();
@@ -75,9 +73,7 @@ public class NetworkService {
                 return;
             }
             connectionThread.interrupt();
-            Log.e("PassSystem", "before");
             connectionThread.join();
-            Log.e("PassSystem", "after");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -123,10 +119,12 @@ public class NetworkService {
     }
 
     private void checkConnectionUntilDisconnect() throws InterruptedException {
+        AtomicBoolean receivedMsg = new AtomicBoolean(false);
         while (!Thread.interrupted()) {
             if (!isConnected) {
                 break;
             }
+            long CHECK_CONNECTION_INTERVAL = 15000;
             if (lastConnectionCheckTime + CHECK_CONNECTION_INTERVAL < System.currentTimeMillis()) {
                 Log.i("PassSystem", "Check connection status");
 
@@ -135,11 +133,13 @@ public class NetworkService {
                     put(Consts.MSG_TYPE_CHECK, String.valueOf(body.length));
                 }});
 
-                AtomicBoolean receivedMsg = new AtomicBoolean(false);
-                exchange(jsonHeader.getBytes(), body, (response)->
-                    receivedMsg.set(true)
-                );
-                isConnected = receivedMsg.get();
+                //receivedMsg.set(false);
+//                Thread thread = exchange(jsonHeader.getBytes(), body, (response)-> {
+//                    if (response != null && response.containsKey(Consts.MSG_TYPE_CHECK))
+//                        receivedMsg.set(true);
+//                });
+//                thread.join();
+//                isConnected = receivedMsg.get();
             }
             Thread.sleep(CHECK_CONNECTION_INTERVAL);
         }
@@ -158,7 +158,10 @@ public class NetworkService {
 
     private byte[] receiveBytes(int size) throws IOException {
         byte[] bytes = new byte[size];
-        inputStream.read(bytes);
+        if (inputStream.read(bytes) == -1) {
+            isConnected = false;
+            throw new IOException("Failed receiving msg from server");
+        }
         return bytes;
     }
 
@@ -172,12 +175,12 @@ public class NetworkService {
         String rawHeader = new String(receiveBytes(64));
         String jsonHeader = rawHeader.substring(0, rawHeader.indexOf('}') + 1);
         Map<String, String> header = JSONManager.parse(jsonHeader);
-
+        Log.e("PassSystem", "Header: " + header.toString());
         int totalSize = header.values()
                 .stream()
                 .mapToInt(Integer::parseInt)
                 .sum();
-
+        Log.e("PassSystem", "Total size: " + totalSize);
         byte[] body = receiveTotalBytes(totalSize);
 
         Map<String, byte[]> result = new LinkedHashMap<>();
@@ -187,10 +190,15 @@ public class NetworkService {
             result.put(key, Arrays.copyOfRange(body, iterator, iterator + nextPart));
             iterator += nextPart;
         }
+        Log.e("PassSystem", "RECEIVED:----------------------");
+        result.forEach((key, value) -> Log.e("passSystem", "Key " + key + " " + new String(value)));
         return result;
     }
 
     private void sendMsg(byte[] jsonHeader, byte[] body) throws IOException {
+        Log.e("PassSystem", "Sending header" +
+                new String(jsonHeader) + " \nbody " + new String(body));
+
         outputStream.write(jsonHeader);
         outputStream.flush();
         outputStream.write(body);
@@ -221,8 +229,8 @@ public class NetworkService {
     }
 
     public void recognizeEmployee(byte[] photo, MsgListener listener) {
-        if (photo == null) {
-            throw  new NullPointerException("Failed recognize employee: photo is missing");
+        if (photo == null || photo.length == 0) {
+            throw new NullPointerException("Failed recognize employee: photo is missing");
         }
         String jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
             put(Consts.MSG_TYPE_RECOGNIZE, String.valueOf(photo.length));
@@ -244,15 +252,24 @@ public class NetworkService {
         Thread thread = new Thread(()->{
             try {
                 lastConnectionCheckTime = System.currentTimeMillis();
+                if (!isConnected) {
+                    throw new IOException("There's no connection");
+                }
                 sendMsg(jsonHeader, body);
                 listener.callback(receiveMsg());
             } catch (IOException e) {
-                listener.callback(new HashMap<String, byte[]>(){{
-                    put("ERROR", e.getMessage().getBytes());
-                }});
+                listener.callback(buildErrorMsg(e.getMessage()));
             }
         });
         thread.start();
         return thread;
+    }
+
+    private Map<String, byte[]> buildErrorMsg(String msg) {
+        return new LinkedHashMap<String, byte[]>(){{
+            put("ERROR", msg != null?
+                    msg.getBytes(): "Unknown error".getBytes());
+            put(Consts.DATA_TYPE_CODE, Consts.CODE_ERROR.getBytes());
+        }};
     }
 }
