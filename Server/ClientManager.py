@@ -1,11 +1,10 @@
 import json
 from json import JSONDecodeError
-from threading import *
-from MsgHandler import MsgHandler
-from MsgHandler import DataType
-from MsgHandler import error_msg
-import time
 from threading import Thread
+
+from MsgHandler import DataType
+from MsgHandler import MsgHandler
+from MsgHandler import error_msg
 
 
 class ClientManager(Thread):
@@ -45,7 +44,6 @@ class ClientManager(Thread):
             print("SEND HEADER " + str(header))
             print("SEND BODY " + str(body))
             self.sock.sendall(header)
-            time.sleep(0.1)
             self.sock.sendall(body)
         except ConnectionAbortedError as e:
             print("Failed to send msg to " + str(self.sock))
@@ -64,6 +62,8 @@ class ClientManager(Thread):
             body += body_part
 
         header_bytes = json.dumps(header, ensure_ascii=False).encode('utf-8')
+        # constant header size - 64
+        header_bytes += ("x" * (64 - len(header_bytes))).encode('utf-8')
 
         return header_bytes, body
 
