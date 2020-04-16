@@ -21,11 +21,17 @@ class DB:
 
         print("Connected to database")
 
-        # print("Connecting to database")
-        # self.conn = pymysql.connect('localhost', 'root', 'root', 'pass_system')
-        # self.cursor = self.conn.cursor()
-        # self.photo_storage_path = "\\photos\\"
-        # print("Connected to database")
+    def get_admin_psw(self, login):
+        query = "SELECT password FROM admins WHERE login='" + str(login) + "'"
+        self.cursor.execute(query)
+
+        return self.cursor.fetchone()
+
+    def get_viewer_psw(self, login):
+        query = "SELECT password FROM viewers WHERE login='" + str(login) + "'"
+        self.cursor.execute(query)
+
+        return self.cursor.fetchone()
 
     def get_next_employee_id(self):
         query = 'SELECT MAX(id) as id FROM employees'

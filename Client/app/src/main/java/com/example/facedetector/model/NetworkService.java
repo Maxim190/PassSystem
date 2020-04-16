@@ -220,6 +220,22 @@ public class NetworkService {
         exchange(jsonHeader.getBytes(), mergeArrays(employeeData, employeePhoto), listener);
     }
 
+    public void authorize(String login, String password, MsgListener listener) {
+        if (login == null || password == null) {
+            throw new NullPointerException("Authorisation Error: login or password is null");
+        }
+        byte[] body = JSONManager.dump(new HashMap<String, String>() {{
+            put(Consts.DATA_TYPE_LOGIN, login);
+            put(Consts.DATA_TYPE_PASSWORD, password);
+        }}).getBytes();
+
+        byte[] jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
+            put(Consts.MSG_TYPE_AUTHORIZE, String.valueOf(body.length));
+        }}).getBytes();
+
+        exchange(jsonHeader, body, listener);
+    }
+
     public void addEmployee(NotIndexedEmployee notIndexedEmployee, MsgListener listener) {
         handleAndSend(notIndexedEmployee, Consts.MSG_TYPE_ADD, listener);
     }

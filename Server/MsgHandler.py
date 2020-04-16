@@ -4,6 +4,7 @@ from enum import Enum
 
 
 class RequestType:
+    AUTHORIZE = "AUTHORIZE"
     RECOGNIZE = "RECOGNIZE"
     ADD = "ADD"
     EDIT = "EDIT"
@@ -12,6 +13,10 @@ class RequestType:
 
 
 class DataType:
+    LOGIN = "login"
+    PASSWORD = "password"
+    ACCESS_ADMIN = "admin"
+    ACCESS_VIEWER = "viewer"
     PHOTO = "PHOTO"
     NAME = "name"
     LAST_NAME = "lastName"
@@ -55,6 +60,8 @@ class MsgHandler:
             return self.edit_employee(request)
         elif request_header == RequestType.DELETE:
             return self.delete_employee(request)
+
+        return error_msg("UNKNOWN", "unknown request type")
 
     def check_request(self):
         return {RequestType.CHECK: "RESPONSE", DataType.CODE: Code.SUCCESS}
