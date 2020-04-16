@@ -57,13 +57,13 @@ class ClientManager(Thread):
         body = bytes()
         for data_type in msg:
             if data_type != DataType.PHOTO:
-                body_part = json.dumps(str(msg[data_type])).encode('utf-8')
+                body_part = json.dumps(msg[data_type], ensure_ascii=False).encode('utf-8')
             else:
                 body_part = msg[data_type]
             header[data_type] = str(len(body_part))
             body += body_part
 
-        header_bytes = json.dumps(header).encode('utf-8')
+        header_bytes = json.dumps(header, ensure_ascii=False).encode('utf-8')
 
         return header_bytes, body
 
