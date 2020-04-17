@@ -44,7 +44,7 @@ class MsgHandler:
     def __init__(self, instances):
         self.instances = instances
 
-    def handle(self, request):
+    def handle(self, request, access_rights):
         if request is None or len(request) == 0:
             return "empty msg received"
         request_header = list(request.keys())[0]
@@ -54,12 +54,16 @@ class MsgHandler:
             return self.check_request()
         elif request_header == RequestType.RECOGNIZE:
             return self.recognize_face(request)
-        elif request_header == RequestType.ADD:
-            return self.add_employee(request)
-        elif request_header == RequestType.EDIT:
-            return self.edit_employee(request)
-        elif request_header == RequestType.DELETE:
-            return self.delete_employee(request)
+
+        if DataType.ACCESS_ADMIN == access_rights:
+            if request_header == RequestType.ADD:
+                return self.add_employee(request)
+            elif request_header == RequestType.EDIT:
+                return self.edit_employee(request)
+            elif request_header == RequestType.DELETE:
+                return self.delete_employee(request)
+        else:
+            return error_msg(request_header, "You do not have permission")
 
         return error_msg("UNKNOWN", "unknown request type")
 

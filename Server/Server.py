@@ -62,4 +62,4 @@ class Server:
                 ClientManager.send_msg(client, *ClientManager.build_response(
                     success_msg(RequestType.AUTHORIZE, access_rights)))
 
-                ClientManager.run(client, instances)
+                ClientManager.run(client, instances, access_rights)

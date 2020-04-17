@@ -6,7 +6,7 @@ from MsgHandler import MsgHandler
 from MsgHandler import error_msg
 
 
-def run(socket, instances):
+def run(socket, instances, access_rights):
     print("ClientManager starting..")
     client_alive = True
     msg_handler = MsgHandler(instances)
@@ -20,7 +20,7 @@ def run(socket, instances):
             received_msg = get_msg(socket)
             print("Received request '" + str(list(received_msg.keys())[0]) + "' from " + str(socket))
 
-            msg_for_client = msg_handler.handle(received_msg)
+            msg_for_client = msg_handler.handle(received_msg, access_rights)
             # print("Msg for client " + str(msg_for_client))
 
             header, body = build_response(msg_for_client)
