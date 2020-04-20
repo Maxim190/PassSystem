@@ -12,18 +12,22 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".ui.activities.employee_activity.EmployeeActivity"
+            android:name=".ui.employee_activity.EmployeeActivity"
             android:theme="@style/AppTheme.AddEmployee" />
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".ui.activities.authorization.AuthorizationActivity">
+        <activity android:name=".ui.authorization.AuthorizationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
     </application>
 
 </manifest>

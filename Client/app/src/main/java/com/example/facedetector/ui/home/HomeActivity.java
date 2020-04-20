@@ -1,0 +1,133 @@
+package com.example.facedetector.ui.home;
+
+import android.app.ActivityOptions;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.ImageView;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.facedetector.R;
+import com.example.facedetector.ui.authorization.AuthorizationActivity;
+import com.example.facedetector.ui.employee_activity.EmployeeActivity;
+
+public class HomeActivity extends AppCompatActivity implements HomeInterface.View{
+
+    private static final int CAMERA_REQUEST = 1888;
+    private static final int ACTIVITY_CLOSED = 1000;
+
+    private ImageView imageView;
+    private Button addBtn;
+
+    private HomeInterface.Presenter presenter;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+
+        presenter = new HomePresenter(this);
+
+        addBtn = findViewById(R.id.button_add_employee);
+        addBtn.setOnClickListener(view -> addBtnClicked());
+
+        imageView = findViewById(R.id.imageView);
+        imageView.setOnClickListener(v -> recognizeBtnClicked());
+
+        Button connectionBtn = findViewById(R.id.button_connection);
+        connectionBtn.setOnClickListener(v -> connectionBtnClicked());
+
+        Button signOutBtn = findViewById(R.id.button_sign_out);
+        signOutBtn.setOnClickListener(v -> signOutBtnClicked());
+    }
+
+    private void signOutBtnClicked() {
+        presenter.signOut();
+    }
+
+    private void connectionBtnClicked() {
+
+    }
+
+    private void addBtnClicked() {
+        presenter.addEmployee();
+    }
+
+    private void recognizeBtnClicked() {
+        //homePresenter.recognizeFace(BitmapFactory.decodeResource(getResources(), R.drawable.image1));
+        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, CAMERA_REQUEST);
+    }
+
+    private void setBackgroundBlur(boolean value, int delay) {
+        if (delay == 0) {
+            //((MainActivity) getActivity()).setBlur(value);
+        } else {
+            new Thread(() -> {
+                try {
+                    Thread.sleep(delay);
+                    //((MainActivity) getActivity()).setBlur(value);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAMERA_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                presenter.recognizeFace(data);
+            } else {
+                displayText("Failed taking photo");
+            }
+        } else if (requestCode == ACTIVITY_CLOSED) {
+            setBackgroundBlur(false, 0);
+        }
+    }
+
+    @Override
+    public void openEmployeeActivity(Bundle bundle) {
+        runOnUiThread(()->{
+            Intent intent = new Intent(this, EmployeeActivity.class);
+            intent.putExtra(EmployeeActivity.BUNDLE_MODE_KEY, bundle);
+            startActivityForResult(intent, ACTIVITY_CLOSED,
+                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            setBackgroundBlur(true, 200);
+        });
+    }
+
+    @Override
+    public void openAuthorizationActivity() {
+        runOnUiThread(()->{
+            Intent intent = new Intent(this, AuthorizationActivity.class);
+            startActivity(intent);
+            finish();
+        });
+    }
+
+    @Override
+    public void setViewEnabled(boolean value) {
+        runOnUiThread(()-> {
+            addBtn.setEnabled(value);
+            imageView.setEnabled(value);
+        });
+    }
+
+    @Override
+    public Context getContext() {
+        return this;
+    }
+
+    public void displayText(String text) {
+        runOnUiThread(() -> {
+            new AlertDialog.Builder(this).setMessage(text).show();
+        });
+    }
+}

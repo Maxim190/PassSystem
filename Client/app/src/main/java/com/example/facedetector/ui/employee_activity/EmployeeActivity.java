@@ -1,4 +1,4 @@
-package com.example.facedetector.ui.activities.employee_activity;
+package com.example.facedetector.ui.employee_activity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -41,11 +41,13 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_employee);
 
-        imageView = findViewById(R.id.imageView);
         fieldName = findViewById(R.id.nameEditText);
         fieldLastName = findViewById(R.id.lastNameEditText);
         fieldBirth = findViewById(R.id.birthEditText);
         fieldDepartment = findViewById(R.id.departmentEditText);
+
+        imageView = findViewById(R.id.imageView);
+        imageView.setOnClickListener(this::takePhotoBtnClicked);
 
         buttonAddEmployee = findViewById(R.id.button_add_employee);
         buttonAddEmployee.setOnClickListener(this::addBtnClicked);

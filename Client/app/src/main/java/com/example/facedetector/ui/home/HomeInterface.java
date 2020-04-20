@@ -1,4 +1,4 @@
-package com.example.facedetector.ui.fragments.home;
+package com.example.facedetector.ui.activities.home;
 
 import android.content.Context;
 import android.content.Intent;
@@ -9,11 +9,14 @@ public interface HomeInterface {
         Context getContext();
         void displayText(String text);
         void openEmployeeActivity(Bundle bundle);
+        void openAuthorizationActivity();
         void setViewEnabled(boolean value);
     }
 
     interface Presenter {
         void addEmployee();
         void recognizeFace(Intent data);
+        void openConnectionDialog();
+        void signOut();
     }
 }

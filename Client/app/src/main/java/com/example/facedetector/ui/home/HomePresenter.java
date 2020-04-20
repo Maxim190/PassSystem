@@ -1,4 +1,4 @@
-package com.example.facedetector.ui.fragments.home;
+package com.example.facedetector.ui.activities.home;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -17,7 +17,6 @@ import com.example.facedetector.utils.MyFaceDetector;
 import com.example.facedetector.ui.activities.employee_activity.EmployeeActivity;
 
 import java.io.ByteArrayOutputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 public class HomePresenter implements HomeInterface.Presenter, MsgListener {
@@ -47,6 +46,17 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener {
         }
         Bitmap bmp = (Bitmap) data.getExtras().get("data");
         recognizeFace(bmp);
+    }
+
+    @Override
+    public void openConnectionDialog() {
+
+    }
+
+    @Override
+    public void signOut() {
+        model.disconnect();
+        currentView.openAuthorizationActivity();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
