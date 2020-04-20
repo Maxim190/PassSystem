@@ -1,11 +1,8 @@
-package com.example.facedetector.ui.activities.employee_activity;
+package com.example.facedetector.ui.employee_activity;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Build;
 import android.os.Bundle;
-
-import androidx.annotation.RequiresApi;
 
 import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;

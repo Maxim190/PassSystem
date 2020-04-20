@@ -1,4 +1,4 @@
-package com.example.facedetector.ui.activities.home;
+package com.example.facedetector.ui.home;
 
 import android.content.Context;
 import android.content.Intent;

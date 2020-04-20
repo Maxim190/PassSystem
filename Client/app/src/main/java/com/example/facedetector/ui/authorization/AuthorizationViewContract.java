@@ -1,6 +1,4 @@
-package com.example.facedetector.ui.activities.authorization;
-
-import android.content.Intent;
+package com.example.facedetector.ui.authorization;
 
 public interface AuthorizationViewContract {
     interface View {

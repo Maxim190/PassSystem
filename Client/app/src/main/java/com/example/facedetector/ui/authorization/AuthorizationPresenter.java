@@ -1,6 +1,5 @@
-package com.example.facedetector.ui.activities.authorization;
+package com.example.facedetector.ui.authorization;
 
-import android.content.Intent;
 import android.util.Log;
 
 import com.example.facedetector.model.MsgListener;

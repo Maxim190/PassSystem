@@ -1,4 +1,4 @@
-package com.example.facedetector.ui.activities.employee_activity;
+package com.example.facedetector.ui.employee_activity;
 
 import android.graphics.Bitmap;
 

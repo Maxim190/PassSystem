@@ -1,4 +1,4 @@
-package com.example.facedetector.ui.fragments.connection;
+package com.example.facedetector.ui.connection;
 
 import android.os.Build;
 
