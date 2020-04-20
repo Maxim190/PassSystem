@@ -11,6 +11,7 @@ public interface HomeInterface {
         void openEmployeeActivity(Bundle bundle);
         void openAuthorizationActivity();
         void setViewEnabled(boolean value);
+        void setConnectionStatus(boolean value);
     }
 
     interface Presenter {

@@ -4,10 +4,12 @@ import android.app.ActivityOptions;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,6 +24,7 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
 
     private ImageView imageView;
     private Button addBtn;
+    private Button connectionBtn;
 
     private HomeInterface.Presenter presenter;
 
@@ -30,19 +33,19 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        presenter = new HomePresenter(this);
-
         addBtn = findViewById(R.id.button_add_employee);
         addBtn.setOnClickListener(view -> addBtnClicked());
 
         imageView = findViewById(R.id.imageView);
         imageView.setOnClickListener(v -> recognizeBtnClicked());
 
-        Button connectionBtn = findViewById(R.id.button_connection);
+        connectionBtn = findViewById(R.id.button_connection);
         connectionBtn.setOnClickListener(v -> connectionBtnClicked());
 
         Button signOutBtn = findViewById(R.id.button_sign_out);
         signOutBtn.setOnClickListener(v -> signOutBtnClicked());
+
+        presenter = new HomePresenter(this);
     }
 
     private void signOutBtnClicked() {
@@ -99,6 +102,16 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
         runOnUiThread(()-> {
             addBtn.setEnabled(value);
             imageView.setEnabled(value);
+        });
+    }
+
+    @Override
+    public void setConnectionStatus(boolean isConnected) {
+        runOnUiThread(()->{
+            int drawableId = isConnected ? R.drawable.check_mark : R.drawable.x_mark;
+            Drawable drawable = getContext().getResources().getDrawable(drawableId, null);
+            connectionBtn.setCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
+            connectionBtn.setClickable(!isConnected);
         });
     }
 

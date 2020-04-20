@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,7 +32,7 @@ public class NetworkService {
     private DataOutputStream outputStream;
 
     private Thread connectionThread;
-
+    private List<ConnectionStatusListener> listeners;
     private long lastConnectionCheckTime;
     private boolean isConnected = false;
 
@@ -43,6 +44,13 @@ public class NetworkService {
     }
 
     private NetworkService() {}
+
+    public void setConnectionStatusListener(ConnectionStatusListener listener) {
+        if (listeners == null) {
+            listeners = new ArrayList<>();
+        }
+        listeners.add(listener);
+    }
 
     public void disconnect() {
         interruptConnectionThread();
@@ -124,7 +132,7 @@ public class NetworkService {
             if (!isConnected) {
                 break;
             }
-            long CHECK_CONNECTION_INTERVAL = 15000;
+            long CHECK_CONNECTION_INTERVAL = 10000;
             if (lastConnectionCheckTime + CHECK_CONNECTION_INTERVAL < System.currentTimeMillis()) {
                 Log.i("PassSystem", "Check connection status");
 
@@ -133,16 +141,23 @@ public class NetworkService {
                     put(Consts.MSG_TYPE_CHECK, String.valueOf(body.length));
                 }});
 
-                //receivedMsg.set(false);
-//                Thread thread = exchange(jsonHeader.getBytes(), body, (response)-> {
-//                    if (response != null && response.containsKey(Consts.MSG_TYPE_CHECK))
-//                        receivedMsg.set(true);
-//                });
-//                thread.join();
-//                isConnected = receivedMsg.get();
+                receivedMsg.set(false);
+                Thread thread = exchange(jsonHeader.getBytes(), body, (response)-> {
+                    if (!response.containsKey("ERROR"))
+                        receivedMsg.set(true);
+                });
+                thread.join();
+                setConnectionStatus(receivedMsg.get());
             }
             Thread.sleep(CHECK_CONNECTION_INTERVAL);
         }
+    }
+
+    private void setConnectionStatus(boolean value) {
+        if (isConnected != value) {
+            listeners.forEach(i-> i.connectionStatusChanged(value));
+        }
+        isConnected = value;
     }
 
     public boolean isConnected() {
@@ -156,7 +171,7 @@ public class NetworkService {
         return result;
     }
 
-    private byte[] receiveBytes(int size) throws IOException {
+    private synchronized byte[] receiveBytes(int size) throws IOException {
         byte[] bytes = new byte[size];
         if (inputStream.read(bytes) == -1) {
             isConnected = false;
@@ -165,7 +180,7 @@ public class NetworkService {
         return bytes;
     }
 
-    private byte[] receiveTotalBytes(int size) throws IOException {
+    private synchronized byte[] receiveTotalBytes(int size) throws IOException {
         byte[] bytes = new byte[size];
         inputStream.readFully(bytes);
         return bytes;
@@ -195,7 +210,7 @@ public class NetworkService {
         return result;
     }
 
-    private void sendMsg(byte[] jsonHeader, byte[] body) throws IOException {
+    private synchronized void sendMsg(byte[] jsonHeader, byte[] body) throws IOException {
         Log.e("PassSystem", "Sending header" +
                 new String(jsonHeader) + " \nbody " + new String(body));
 
@@ -224,6 +239,8 @@ public class NetworkService {
         if (login == null || password == null) {
             throw new NullPointerException("Authorisation Error: login or password is null");
         }
+        //ЗАПОМНИТЬ ЛОГИН ПАРОЛЬ, ЧТОБ В СЛУЧАЕ ПЕРЕПОДЛЮЧЕНИЯ НЕ ЗАПРАШИВАТЬ СНОВА У ПОЛЬЗОВАТЕЛЯ ПАРОЛЬ
+        //И ЕСЛИ ПАРОЛЬ НЕ ПОДОШЕЛ ТО ВЫКИДЫВАТЬ НА СТРАНИЦУ
         byte[] body = JSONManager.dump(new HashMap<String, String>() {{
             put(Consts.DATA_TYPE_LOGIN, login);
             put(Consts.DATA_TYPE_PASSWORD, password);
@@ -274,6 +291,7 @@ public class NetworkService {
                 sendMsg(jsonHeader, body);
                 listener.callback(receiveMsg());
             } catch (IOException e) {
+                setConnectionStatus(false);
                 listener.callback(buildErrorMsg(e.getMessage()));
             }
         });

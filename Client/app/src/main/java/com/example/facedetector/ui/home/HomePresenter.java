@@ -8,6 +8,7 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.example.facedetector.model.ConnectionStatusListener;
 import com.example.facedetector.utils.Bundlebuilder;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.model.NetworkService;
@@ -19,17 +20,18 @@ import com.example.facedetector.ui.employee_activity.EmployeeActivity;
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
-public class HomePresenter implements HomeInterface.Presenter, MsgListener {
+public class HomePresenter implements HomeInterface.Presenter, MsgListener, ConnectionStatusListener {
 
     private HomeInterface.View currentView;
     private MyFaceDetector faceDetector;
     private NetworkService model;
-    private static Thread checkConnectionThread;
 
     public HomePresenter(HomeInterface.View currentView) {
         this.currentView = currentView;
         this.faceDetector = new MyFaceDetector(currentView.getContext());
         this.model = NetworkService.getIntent();
+        model.setConnectionStatusListener(this);
+        currentView.setConnectionStatus(model.isConnected());
     }
 
     @Override
@@ -47,31 +49,6 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener {
         }
         Bitmap bmp = (Bitmap) data.getExtras().get("data");
         recognizeFace(bmp);
-    }
-
-    private void checkConnectionStatus(boolean check) {
-        if (checkConnectionThread != null) {
-            checkConnectionThread.interrupt();
-        }
-        if (check) {
-            checkConnectionThread = new Thread(() -> {
-                boolean previousStatus = model.isConnected();
-                currentView.displayText("");
-                while (!Thread.interrupted()) {
-                    try {
-                        boolean isConnected = model.isConnected();
-                        if (isConnected != previousStatus) {
-                            //currentView.displayText(model.isConnected());
-                        }
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-                }
-            });
-            checkConnectionThread.start();
-        }
     }
 
     @Override
@@ -121,5 +98,10 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener {
         bundle.putInt(EmployeeActivity.BUNDLE_MODE_KEY,
                 EmployeeActivity.ACTIVITY_EDIT_MODE);
         currentView.openEmployeeActivity(bundle);
+    }
+
+    @Override
+    public void connectionStatusChanged(boolean isConnected) {
+        currentView.setConnectionStatus(isConnected);
     }
 }
