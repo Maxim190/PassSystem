@@ -63,21 +63,6 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
         startActivityForResult(intent, CAMERA_REQUEST);
     }
 
-    private void setBackgroundBlur(boolean value, int delay) {
-        if (delay == 0) {
-            //((MainActivity) getActivity()).setBlur(value);
-        } else {
-            new Thread(() -> {
-                try {
-                    Thread.sleep(delay);
-                    //((MainActivity) getActivity()).setBlur(value);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }).start();
-        }
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -87,8 +72,6 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
             } else {
                 displayText("Failed taking photo");
             }
-        } else if (requestCode == ACTIVITY_CLOSED) {
-            setBackgroundBlur(false, 0);
         }
     }
 
@@ -99,7 +82,6 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
             intent.putExtra(EmployeeActivity.BUNDLE_MODE_KEY, bundle);
             startActivityForResult(intent, ACTIVITY_CLOSED,
                     ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-            setBackgroundBlur(true, 200);
         });
     }
 
