@@ -1,7 +1,6 @@
 package com.example.facedetector.ui.home;
 
 import android.app.ActivityOptions;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -10,18 +9,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
-import com.example.facedetector.ui.authorization.AuthorizationActivity;
-import com.example.facedetector.ui.employee_activity.EmployeeActivity;
 
 public class HomeActivity extends AppCompatActivity implements HomeInterface.View{
-
-    private static final int CAMERA_REQUEST = 1888;
-    private static final int ACTIVITY_CLOSED = 1000;
 
     private ImageView imageView;
     private Button addBtn;
@@ -54,7 +47,7 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
     }
 
     private void connectionBtnClicked() {
-
+        presenter.openConnectionActivity();
     }
 
     private void addBtnClicked() {
@@ -62,40 +55,18 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
     }
 
     private void recognizeBtnClicked() {
-        //homePresenter.recognizeFace(BitmapFactory.decodeResource(getResources(), R.drawable.image1));
-        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-        startActivityForResult(intent, CAMERA_REQUEST);
+        presenter.recognizeFace();
+    }
+
+    public void startNewActivityForResult(Intent intent, int requestCode) {
+        runOnUiThread(()->startActivityForResult(intent, requestCode,
+                ActivityOptions.makeSceneTransitionAnimation(this).toBundle()));
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CAMERA_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                presenter.recognizeFace(data);
-            } else {
-                displayText("Failed taking photo");
-            }
-        }
-    }
-
-    @Override
-    public void openEmployeeActivity(Bundle bundle) {
-        runOnUiThread(()->{
-            Intent intent = new Intent(this, EmployeeActivity.class);
-            intent.putExtra(EmployeeActivity.BUNDLE_MODE_KEY, bundle);
-            startActivityForResult(intent, ACTIVITY_CLOSED,
-                    ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
-        });
-    }
-
-    @Override
-    public void openAuthorizationActivity() {
-        runOnUiThread(()->{
-            Intent intent = new Intent(this, AuthorizationActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        presenter.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -129,7 +100,5 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
     }
 
     @Override
-    public void onBackPressed() {
-        finish();
-    }
+    public void onBackPressed() {}
 }

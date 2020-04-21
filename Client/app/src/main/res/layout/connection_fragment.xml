@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -35,7 +35,7 @@
     </LinearLayout>
 
     <Button
-        android:id="@+id/btn_connection"
+        android:id="@+id/button_connect"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -50,22 +50,12 @@
         tools:layout_editor_absoluteY="69dp" />
 
     <TextView
-        android:id="@+id/label"
+        android:id="@+id/textView_log"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
-        app:layout_constraintTop_toBottomOf="@id/btn_connection"
-        android:text="Log"/>
-
-    <TextView
-        android:id="@+id/logTextView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:inputType="textMultiLine"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/label"
-        tools:ignore="TextViewEdits" />
+        android:textColor="@color/colorPink"
+        android:text="_____"
+        app:layout_constraintTop_toBottomOf="@id/button_connect" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

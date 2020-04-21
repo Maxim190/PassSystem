@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -17,19 +18,21 @@ public class AuthorizationActivity extends AppCompatActivity implements Authoriz
     private AuthorizationViewContract.Presenter presenter;
     private EditText fieldLogin;
     private EditText fieldPassword;
+    private TextView errorMsgField;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_authorization);
 
-        presenter = new AuthorizationPresenter(this);
-
         fieldLogin = findViewById(R.id.editText_login);
         fieldPassword = findViewById(R.id.editText_password);
+        errorMsgField = findViewById(R.id.textView_error_msg);
 
         Button signInBtn = findViewById(R.id.button_sign_in);
         signInBtn.setOnClickListener(v-> signInButtonClicked());
+
+        presenter = new AuthorizationPresenter(this);
     }
 
     public void signInButtonClicked() {
@@ -56,6 +59,9 @@ public class AuthorizationActivity extends AppCompatActivity implements Authoriz
 
     @Override
     public void displayMsg(String msg) {
-        runOnUiThread(()-> new AlertDialog.Builder(this).setMessage(msg).show());
+        runOnUiThread(()-> errorMsgField.setText(msg));
     }
+
+    @Override
+    public void onBackPressed() {}
 }

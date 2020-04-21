@@ -26,14 +26,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NetworkService {
 
+    public static final String DEFAULT_HOST_IP = "192.168.0.102";
+    private static final int DEFAULT_PORT = 8000;
+
     private static NetworkService intent;
 
     private Socket socket;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
 
+    private List<ConnectionStatusListener> statusListeners;
+    private List<ConnectionLogListener> logListeners;
     private Thread connectionThread;
-    private List<ConnectionStatusListener> listeners;
     private long lastConnectionCheckTime;
     private boolean isConnected = false;
 
@@ -47,14 +51,20 @@ public class NetworkService {
     private NetworkService() {}
 
     public void setConnectionStatusListener(ConnectionStatusListener listener) {
-        if (listeners == null) {
-            listeners = new ArrayList<>();
+        if (statusListeners == null) {
+            statusListeners = new ArrayList<>();
         }
-        listeners.add(listener);
+        statusListeners.add(listener);
+    }
+
+    public void setLogListener(ConnectionLogListener listener) {
+        if (logListeners == null) {
+            logListeners = new ArrayList<>();
+        }
+        logListeners.add(listener);
     }
 
     public void disconnect() {
-        interruptConnectionThread();
         if (socket == null) {
             return;
         }
@@ -63,6 +73,7 @@ public class NetworkService {
             inputStream.close();
             outputStream.close();
             isConnected = false;
+            interruptConnectionThread();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -70,45 +81,37 @@ public class NetworkService {
 
     private boolean createSocket(String host, int port) throws IOException {
         socket = new Socket(host, port);
-        socket.setSoTimeout(10000);
         inputStream = new DataInputStream(socket.getInputStream());
         outputStream = new DataOutputStream(socket.getOutputStream());
         return socket.isConnected();
     }
 
     private void interruptConnectionThread() {
-        try {
-            if (connectionThread == null) {
-                return;
-            }
-            connectionThread.interrupt();
-            connectionThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (connectionThread == null) {
+            return;
         }
+        connectionThread.interrupt();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
-    public void connect(String host, int port) {
+    public void connect(String host) {
         disconnect();
         connectionThread = new Thread(() -> {
             try {
-                Log.i("PassSystem", "Connecting to " + host + ":" + port);
-                isConnected = createSocket(host, port);
-                if (!isConnected) {
-                    Log.e("PassSystem","Failed to connect " + host + ":" + port);
-                    return;
-                }
+                log( "Connecting to " + host + ":" + DEFAULT_PORT);
+                setConnectionStatus(createSocket(host, DEFAULT_PORT));
             } catch (IOException e) {
-                e.printStackTrace();
+                setConnectionStatus(false);
+                log("Failed to connect " + host + ":" + DEFAULT_PORT);
+                return;
             }
 
             int attempts = 1;
             while (!Thread.interrupted()) {
                 try {
                     if (!isConnected && !Thread.interrupted()) {
-                        Log.i("PassSystem", "Reconnect to " + host + ":" + port + " Attempt:" + attempts);
-                        setConnectionStatus(createSocket(host, port));
+                        log("Reconnect to " + host + ":" + DEFAULT_PORT + " Attempt:" + attempts);
+                        setConnectionStatus(createSocket(host, DEFAULT_PORT));
                         lastConnectionCheckTime = System.currentTimeMillis();
                     } else {
                         if (AuthorizationHandler.getLogin() != null && AuthorizationHandler.getPassword() != null) {
@@ -118,12 +121,13 @@ public class NetworkService {
                         }
                         checkConnectionUntilDisconnect();
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     e.printStackTrace();
                     break;
+                } catch (IOException e) {
+                    log(e.getMessage());
+                    e.printStackTrace();
                 }
                 attempts++;
             }
@@ -139,7 +143,7 @@ public class NetworkService {
             }
             long CHECK_CONNECTION_INTERVAL = 10000;
             if (lastConnectionCheckTime + CHECK_CONNECTION_INTERVAL < System.currentTimeMillis()) {
-                Log.i("PassSystem", "Check connection status");
+                log( "Check connection status");
 
                 byte[] body = Consts.MSG_TYPE_CHECK.getBytes();
                 String jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
@@ -158,9 +162,20 @@ public class NetworkService {
         }
     }
 
+    private void log(String msg) {
+        if (logListeners != null) {
+            logListeners.forEach(i->{
+                if (i != null) {
+                    i.logCallback(msg);
+                }
+            });
+        }
+        Log.e("PassSystem", msg);
+    }
+
     private void setConnectionStatus(boolean value) {
-        if (isConnected != value && listeners != null) {
-            listeners.forEach(i-> {
+        if (isConnected != value && statusListeners != null) {
+            statusListeners.forEach(i-> {
                 if (i != null) {
                     i.connectionStatusChanged(value);
                 }
@@ -199,6 +214,10 @@ public class NetworkService {
         String rawHeader = new String(receiveBytes(64));
         String jsonHeader = rawHeader.substring(0, rawHeader.indexOf('}') + 1);
         Map<String, String> header = JSONManager.parse(jsonHeader);
+
+        if (header == null) {
+            throw new IOException("Failed receiving data from server");
+        }
 
         int totalSize = header.values()
                 .stream()

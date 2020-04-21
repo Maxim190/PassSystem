@@ -14,13 +14,10 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
     private AuthorizationViewContract.View currentView;
     private NetworkService model;
 
-    private String host = "192.168.0.102";
-    private int port = 8000;
-
     AuthorizationPresenter(AuthorizationViewContract.View currentView) {
         this.currentView = currentView;
         model = NetworkService.getIntent();
-        model.connect(host, port);
+        model.connect(NetworkService.DEFAULT_HOST_IP);
         CURRENT_RIGHTS = Consts.ACCESS_VIEWER;
     }
 
@@ -28,7 +25,7 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
     public void signIn() {
         if (!model.isConnected()) {
             AuthorizationHandler.clearData();
-            model.connect(host, port);
+            model.connect(NetworkService.DEFAULT_HOST_IP);
         }
         String login = currentView.getLogin();
         String password = currentView.getPassword();

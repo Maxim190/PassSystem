@@ -1,53 +1,39 @@
 package com.example.facedetector.ui.connection;
 
-import android.os.Build;
-
-import androidx.annotation.RequiresApi;
-
+import com.example.facedetector.model.ConnectionStatusListener;
 import com.example.facedetector.model.NetworkService;
+import com.example.facedetector.model.ConnectionLogListener;
 
-public class ConnectionPresenter {
+public class ConnectionPresenter implements ConnectionStatusListener, ConnectionLogListener, ConnectionViewContract.Presenter {
 
-    private static Thread checkConnectionThread;
-    private ConnectionInterface currentView;
+    private ConnectionViewContract.View currentView;
     private NetworkService model;
 
-    public ConnectionPresenter(ConnectionInterface currentView) {
+    public ConnectionPresenter(ConnectionViewContract.View currentView) {
         this.currentView = currentView;
         model = NetworkService.getIntent();
+        model.setConnectionStatusListener(this);
+        model.setLogListener(this);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void connectToServerToggle() {
-        if (model.isConnected()) {
-            model.disconnect();
-            currentView.displayConnectionStatus(false);
-            checkConnectionStatus(false);
-        } else {
-            String host = currentView.getIp();
-            //Log.i("PassSystem", "Trying connect");
-            model.connect(host.isEmpty() ? "localhost" : host, 8000);
-            checkConnectionStatus(true);
+    @Override
+    public void connectionStatusChanged(boolean isConnected) {
+        if (isConnected) {
+            currentView.closeActivity();
         }
     }
 
-    private void checkConnectionStatus(boolean check) {
-        if (checkConnectionThread != null) {
-            checkConnectionThread.interrupt();
+    @Override
+    public void connect() {
+        String ip = currentView.getIp();
+        if (ip == null || ip.isEmpty()) {
+            return;
         }
-        if (check) {
-            checkConnectionThread = new Thread(() -> {
-                while (!Thread.interrupted()) {
-                    try {
-                        currentView.displayConnectionStatus(model.isConnected());
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                        break;
-                    }
-                }
-            });
-            checkConnectionThread.start();
-        }
+        model.connect(ip);
+    }
+
+    @Override
+    public void logCallback(String msg) {
+        currentView.displayLog(msg);
     }
 }
