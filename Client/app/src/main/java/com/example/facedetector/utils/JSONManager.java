@@ -1,9 +1,6 @@
 package com.example.facedetector.utils;
 
-import android.util.Log;
-
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -11,8 +8,6 @@ import java.util.Map;
 public class JSONManager {
 
     public static String parseToStr(byte[] data) {
-        Log.e("PassSystem", "JsonManager before " + new String(data));
-        Log.e("PassSystem", "JsonManager after " + new String(data).replaceAll("[\"\']", ""));
         return new String(data).replaceAll("[\"\']", "");
     }
 

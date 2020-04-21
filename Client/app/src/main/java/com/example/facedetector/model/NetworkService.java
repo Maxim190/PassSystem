@@ -91,7 +91,6 @@ public class NetworkService {
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void connect(String host, int port) {
         disconnect();
-        Log.e("PassSystem", "*");
         connectionThread = new Thread(() -> {
             try {
                 Log.i("PassSystem", "Connecting to " + host + ":" + port);
@@ -200,12 +199,12 @@ public class NetworkService {
         String rawHeader = new String(receiveBytes(64));
         String jsonHeader = rawHeader.substring(0, rawHeader.indexOf('}') + 1);
         Map<String, String> header = JSONManager.parse(jsonHeader);
-        Log.e("PassSystem", "Header: " + header.toString());
+
         int totalSize = header.values()
                 .stream()
                 .mapToInt(Integer::parseInt)
                 .sum();
-        Log.e("PassSystem", "Total size: " + totalSize);
+
         byte[] body = receiveTotalBytes(totalSize);
 
         Map<String, byte[]> result = new LinkedHashMap<>();
@@ -215,15 +214,11 @@ public class NetworkService {
             result.put(key, Arrays.copyOfRange(body, iterator, iterator + nextPart));
             iterator += nextPart;
         }
-        Log.e("PassSystem", "RECEIVED:----------------------");
-        result.forEach((key, value) -> Log.e("passSystem", "Key " + key + " " + new String(value)));
+
         return result;
     }
 
     private synchronized void sendMsg(byte[] jsonHeader, byte[] body) throws IOException {
-        Log.e("PassSystem", "Sending header" +
-                new String(jsonHeader) + " \nbody " + new String(body));
-
         outputStream.write(jsonHeader);
         outputStream.flush();
         outputStream.write(body);
