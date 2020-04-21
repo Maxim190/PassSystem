@@ -33,13 +33,26 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
     private MyFaceDetector faceDetector;
     private NetworkService model;
 
-    HomePresenter(HomeInterface.View currentView) {
+    HomePresenter(HomeInterface.View currentView, Bundle bundle) {
         this.currentView = currentView;
         this.faceDetector = new MyFaceDetector(currentView.getContext());
         this.model = NetworkService.getIntent();
 
+        extractFromBundle(bundle);
         model.setConnectionStatusListener(this);
         currentView.setConnectionStatus(model.isConnected());
+    }
+
+    private void extractFromBundle(Bundle bundle) {
+        if (bundle == null) {
+            return;
+        }
+        String name = bundle.getString(Consts.DATA_TYPE_NAME);
+        String lastName = bundle.getString(Consts.DATA_TYPE_LAST_NAME);
+        String position = bundle.getString(Consts.DATA_TYPE_POSITION);
+
+        currentView.setName(name + " " + lastName);
+        currentView.setPosition(position);
     }
 
     @Override
@@ -58,7 +71,7 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
 
     private void openEmployeeActivity(Bundle bundle) {
         Intent intent = new Intent(currentView.getContext(), EmployeeActivity.class);
-        intent.putExtra(EmployeeActivity.BUNDLE_MODE_KEY, bundle);
+        intent.putExtra(Consts.DATA_TYPE_BUNDLE, bundle);
         currentView.startNewActivityForResult(intent, 0);
     }
 
@@ -69,7 +82,7 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
         }
         else {
             Bundle bundle = new Bundle();
-            bundle.putInt(EmployeeActivity.BUNDLE_MODE_KEY, EmployeeActivity.ACTIVITY_ADD_MODE);
+            bundle.putInt(Consts.DATA_TYPE_BUNDLE, EmployeeActivity.ACTIVITY_ADD_MODE);
             openEmployeeActivity(bundle);
         }
     }
@@ -139,7 +152,7 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
         }
 
         Bundle bundle = Bundlebuilder.build(data);
-        bundle.putInt(EmployeeActivity.BUNDLE_MODE_KEY,
+        bundle.putInt(Consts.DATA_TYPE_BUNDLE,
                 EmployeeActivity.ACTIVITY_EDIT_MODE);
         openEmployeeActivity(bundle);
     }

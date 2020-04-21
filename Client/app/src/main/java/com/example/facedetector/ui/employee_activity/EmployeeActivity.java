@@ -16,11 +16,11 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
+import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.PhotoManager;
 
 public class EmployeeActivity extends AppCompatActivity implements EmployeeViewContract.View {
 
-    public static final String BUNDLE_MODE_KEY = "mode";
     public static final int ACTIVITY_ADD_MODE = 0;
     public static final int ACTIVITY_EDIT_MODE = 1;
 
@@ -58,7 +58,7 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
         buttonDeleteEmployee = findViewById(R.id.button_delete_employee);
         buttonDeleteEmployee.setOnClickListener(this::deleteBtnClicked);
 
-        presenter = new EmployeePresenter(this, getIntent().getBundleExtra(BUNDLE_MODE_KEY));
+        presenter = new EmployeePresenter(this, getIntent().getBundleExtra(Consts.DATA_TYPE_BUNDLE));
     }
 
     public void setActivityMode(int mode) {

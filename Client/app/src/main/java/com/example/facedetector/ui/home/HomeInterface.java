@@ -13,6 +13,8 @@ public interface HomeInterface {
         void setViewEnabled(boolean value);
         void setConnectionStatus(boolean value);
         void startNewActivityForResult(Intent intent, int requestCode);
+        void setName(String name);
+        void setPosition(String position);
     }
 
     interface Presenter {

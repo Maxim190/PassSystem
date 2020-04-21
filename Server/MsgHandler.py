@@ -15,6 +15,7 @@ class RequestType:
 class DataType:
     LOGIN = "login"
     PASSWORD = "password"
+    ACCESS = "rights"
     ACCESS_ADMIN = "admin"
     ACCESS_VIEWER = "viewer"
     PHOTO = "PHOTO"
@@ -24,19 +25,16 @@ class DataType:
     DEPARTMENT_ID = "departmentId"
     ID = "id"
     CODE = "code"
-
-
-class Code:
-    SUCCESS = "1"
-    ERROR = "2"
+    CODE_SUCCESS = "1"
+    CODE_ERROR = "2"
 
 
 def error_msg(msg_type, msg):
-    return {msg_type: msg, DataType.CODE: Code.ERROR}
+    return {msg_type: msg, DataType.CODE: DataType.CODE_ERROR}
 
 
 def success_msg(msg_type, msg):
-    return {msg_type: msg, DataType.CODE: Code.SUCCESS}
+    return {msg_type: msg, DataType.CODE: DataType.CODE_SUCCESS}
 
 
 class MsgHandler:
@@ -68,7 +66,7 @@ class MsgHandler:
         return error_msg("UNKNOWN", "unknown request type")
 
     def check_request(self):
-        return {RequestType.CHECK: "RESPONSE", DataType.CODE: Code.SUCCESS}
+        return success_msg(RequestType.CHECK, "RESPONSE")
 
     def recognize_face(self, data):
         photo_bytes = data[RequestType.RECOGNIZE]
@@ -101,7 +99,7 @@ class MsgHandler:
             DataType.PHOTO:
                 self.instances.FACE_MANAGER.read_img(
                     self.instances.DATA_BASE.get_image_data(employee_id)["photo"]),
-            DataType.CODE: Code.SUCCESS
+            DataType.CODE: DataType.CODE_SUCCESS
         }
 
     def find_employee(self, descriptor_on_check):
@@ -151,10 +149,7 @@ class MsgHandler:
             self.instances.FACE_MANAGER \
                 .write_img(request[DataType.PHOTO], photo_file_path)
 
-            return {
-                RequestType.ADD: employee_id,
-                DataType.CODE: Code.SUCCESS
-            }
+            return success_msg(RequestType.ADD, employee_id)
         except IndexError:
             return error_msg(RequestType.ADD, "Not enough data for adding new employee")
 
@@ -190,8 +185,7 @@ class MsgHandler:
             else:
                 response_msg += "Failed to edit photo: no face detected"
 
-            return {RequestType.EDIT: response_msg,
-                    DataType.CODE: Code.SUCCESS}
+            return success_msg(RequestType.EDIT, response_msg)
         except IndexError:
             return error_msg(RequestType.EDIT, "Not enough data for editing")
 
@@ -204,5 +198,4 @@ class MsgHandler:
         self.instances.DATA_BASE.del_employee(id)
         self.instances.FACE_MANAGER.delete_photo(photo_path)
 
-        return {RequestType.DELETE: "Employee deleted successfully",
-                DataType.CODE: Code.SUCCESS}
+        return success_msg(RequestType.DELETE, "Employee deleted successfully")

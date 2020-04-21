@@ -16,6 +16,8 @@ public class Consts {
     public final static String DATA_TYPE_LAST_NAME = "last_name";
     public final static String DATA_TYPE_BIRTH = "birth";
     public final static String DATA_TYPE_DEPARTMENT = "department_id";
+    public final static String DATA_TYPE_POSITION = "position";
+    public final static String DATA_TYPE_BUNDLE = "position";
 
     public final static String DATA_TYPE_CODE = "code";
     public final static String CODE_SUCCESS = "1";

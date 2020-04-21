@@ -51,12 +51,12 @@ class Server:
                 array = json.loads(raw_data[RequestType.AUTHORIZE])
 
                 access_rights = None
-                admin = instances.DATA_BASE.get_admin_psw(array[DataType.LOGIN])
+                admin = instances.DATA_BASE.get_admin(array[DataType.LOGIN])
 
                 if admin is not None and array[DataType.PASSWORD] == admin[DataType.PASSWORD]:
                     access_rights = DataType.ACCESS_ADMIN
                 else:
-                    viewer = instances.DATA_BASE.get_viewer_psw(array[DataType.LOGIN])
+                    viewer = instances.DATA_BASE.get_viewer(array[DataType.LOGIN])
                     if viewer is not None and viewer[DataType.PASSWORD] == array[DataType.PASSWORD]:
                         access_rights = DataType.ACCESS_VIEWER
 
@@ -65,7 +65,12 @@ class Server:
                         error_msg(RequestType.AUTHORIZE, "Wrong login or password")))
                 else:
                     ClientManager.send_msg(client, *ClientManager.build_response(
-                        success_msg(RequestType.AUTHORIZE, access_rights)))
+                        {
+                            RequestType.AUTHORIZE: admin if admin is not None else viewer,
+                            DataType.ACCESS: access_rights,
+                            DataType.CODE: DataType.CODE_SUCCESS
+                        })
+                    )
 
                     ClientManager.run(client, instances, access_rights)
 

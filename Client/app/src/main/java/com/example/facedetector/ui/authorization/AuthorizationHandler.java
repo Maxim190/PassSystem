@@ -50,7 +50,7 @@ public class AuthorizationHandler {
         else if (data.containsKey(Consts.DATA_TYPE_CODE)) {
             String code = JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE));
             if (Consts.CODE_SUCCESS.equals(code)) {
-                currentRightMode = JSONManager.parseToStr(data.get(Consts.MSG_TYPE_AUTHORIZE));
+                currentRightMode = JSONManager.parseToStr(data.get(Consts.DATA_TYPE_ACCESS_RIGHTS));
                 return;
             }
         }

@@ -1,5 +1,7 @@
 package com.example.facedetector.ui.authorization;
 
+import android.os.Bundle;
+
 import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.utils.Consts;
@@ -53,7 +55,12 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
                 return;
             }
             AuthorizationHandler.extractAccessRightMode(data);
-            currentView.openMainActivity();
+
+            Bundle bundle = new Bundle();
+            Map<String, String> array = JSONManager.parse(
+                    new String(data.get(Consts.MSG_TYPE_AUTHORIZE)));
+            array.forEach(bundle::putString);
+            currentView.openMainActivity(bundle);
         }
     }
 }

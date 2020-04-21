@@ -5,20 +5,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
+import com.example.facedetector.utils.Consts;
 
 public class HomeActivity extends AppCompatActivity implements HomeInterface.View{
 
     private ImageView imageView;
     private Button addBtn;
     private Button connectionBtn;
+    private TextView nameField;
+    private TextView positionField;
 
     private HomeInterface.Presenter presenter;
 
@@ -36,10 +41,13 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
         connectionBtn = findViewById(R.id.button_connection);
         connectionBtn.setOnClickListener(v -> connectionBtnClicked());
 
+        nameField = findViewById(R.id.textView_name);
+        positionField = findViewById(R.id.textView_position);
+
         Button signOutBtn = findViewById(R.id.button_sign_out);
         signOutBtn.setOnClickListener(v -> signOutBtnClicked());
 
-        presenter = new HomePresenter(this);
+        presenter = new HomePresenter(this, getIntent().getBundleExtra(Consts.DATA_TYPE_BUNDLE));
     }
 
     private void signOutBtnClicked() {
@@ -61,6 +69,16 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
     public void startNewActivityForResult(Intent intent, int requestCode) {
         runOnUiThread(()->startActivityForResult(intent, requestCode,
                 ActivityOptions.makeSceneTransitionAnimation(this).toBundle()));
+    }
+
+    @Override
+    public void setName(String name) {
+        runOnUiThread(()->nameField.setText(name));
+    }
+
+    @Override
+    public void setPosition(String position) {
+        runOnUiThread(()->positionField.setText(position));
     }
 
     @Override

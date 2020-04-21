@@ -30,7 +30,7 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
             fillViewFields(bundle);
             indexedEmployee = new IndexedEmployee(
                     getEmployeeDataFromView(), bundle.getString(Consts.DATA_TYPE_ID));
-            currentView.setActivityMode(bundle.getInt(EmployeeActivity.BUNDLE_MODE_KEY));
+            currentView.setActivityMode(bundle.getInt(Consts.DATA_TYPE_BUNDLE));
         }
     }
 

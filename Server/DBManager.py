@@ -21,14 +21,14 @@ class DB:
 
         print("Connected to database")
 
-    def get_admin_psw(self, login):
-        query = "SELECT password FROM admins WHERE login='" + str(login) + "'"
+    def get_admin(self, login):
+        query = "SELECT * FROM admins WHERE login='" + str(login) + "'"
         self.cursor.execute(query)
 
         return self.cursor.fetchone()
 
-    def get_viewer_psw(self, login):
-        query = "SELECT password FROM viewers WHERE login='" + str(login) + "'"
+    def get_viewer(self, login):
+        query = "SELECT * FROM viewers WHERE login='" + str(login) + "'"
         self.cursor.execute(query)
 
         return self.cursor.fetchone()

@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
 import com.example.facedetector.ui.home.HomeActivity;
+import com.example.facedetector.utils.Consts;
 
 public class AuthorizationActivity extends AppCompatActivity implements AuthorizationViewContract.View {
 
@@ -39,10 +40,11 @@ public class AuthorizationActivity extends AppCompatActivity implements Authoriz
         presenter.signIn();
     }
 
-    public void openMainActivity() {
+    public void openMainActivity(Bundle bundle) {
         runOnUiThread(()->{
             Intent intent = new Intent(this, HomeActivity.class);
-            startActivityForResult(intent, 0);
+            intent.putExtra(Consts.DATA_TYPE_BUNDLE, bundle);
+            startActivity(intent);
             finish();
         });
     }
