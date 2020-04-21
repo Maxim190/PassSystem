@@ -8,13 +8,8 @@ from MsgHandler import error_msg
 
 def run(socket, instances, access_rights):
     print("ClientManager starting..")
-    client_alive = True
     msg_handler = MsgHandler(instances)
     while True:
-        if not client_alive:
-            print("Connection with " + str(socket) + " has lost")
-            socket.close()
-            break
         try:
             print("Waiting msg")
             received_msg = get_msg(socket)
@@ -25,7 +20,11 @@ def run(socket, instances, access_rights):
 
             header, body = build_response(msg_for_client)
             send_msg(socket, header, body)
+        except ConnectionAbortedError:
+            print("Connection lost with " + str(socket))
+            raise ConnectionAbortedError
         except Exception as e:
+            print("An error has occurred " + str(e))
             msg = build_response(
                 error_msg("Error", str(e)))
             send_msg(socket, *msg)
@@ -33,12 +32,8 @@ def run(socket, instances, access_rights):
 
 
 def send_msg(socket, header, body):
-    try:
-        socket.sendall(header)
-        socket.sendall(body)
-    except ConnectionAbortedError as e:
-        print("Failed to send msg to " + str(socket))
-        socket.client_alive = False
+    socket.sendall(header)
+    socket.sendall(body)
 
 
 def build_response(msg):
@@ -62,12 +57,11 @@ def build_response(msg):
 def get_msg(socket):
     raw_data = socket.recv(32)
     if raw_data is None or len(raw_data) == 0:
-        raise Exception("Get empty data packet")
+        raise ConnectionAbortedError("Get empty data packet")
     try:
         print(raw_data)
         header = json.loads(raw_data)
     except JSONDecodeError as e:
-        print("Get msg error " + e.msg)
         raise Exception('Invalid json: {}'.format(e)) from None
 
     total_size = 0
