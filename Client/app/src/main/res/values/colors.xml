@@ -5,7 +5,7 @@
     <color name="colorBlack">#000000</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorLightGray">#F2F2F2</color>
-    <color name="colorGrey">#CFCFCF</color>
-    <color name="colorPink">#D81B60</color>
+    <color name="colorGray">#CFCFCF</color>
+    <color name="colorPink">#FD468C</color>
     <color name="colorPurple">#8D4FFB</color>
 </resources>
