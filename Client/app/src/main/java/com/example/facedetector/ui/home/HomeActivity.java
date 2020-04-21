@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
@@ -122,7 +123,13 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
 
     public void displayText(String text) {
         runOnUiThread(() -> {
-            new AlertDialog.Builder(this).setMessage(text).show();
+            //new AlertDialog.Builder(this).setMessage(text).show();
+            Toast.makeText(this, text, Toast.LENGTH_LONG).show();
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 }

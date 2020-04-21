@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi;
 import com.example.facedetector.model.employee.Employee;
 import com.example.facedetector.model.employee.IndexedEmployee;
 import com.example.facedetector.model.employee.NotIndexedEmployee;
+import com.example.facedetector.ui.authorization.AuthorizationHandler;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.JSONManager;
 
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NetworkService {
 
-    private static NetworkService msgSender;
+    private static NetworkService intent;
 
     private Socket socket;
     private DataInputStream inputStream;
@@ -37,10 +38,10 @@ public class NetworkService {
     private boolean isConnected = false;
 
     public static NetworkService getIntent() {
-        if (msgSender == null) {
-            msgSender = new NetworkService();
+        if (intent == null) {
+            intent = new NetworkService();
         }
-        return msgSender;
+        return intent;
     }
 
     private NetworkService() {}
@@ -108,9 +109,14 @@ public class NetworkService {
                 try {
                     if (!isConnected && !Thread.interrupted()) {
                         Log.i("PassSystem", "Reconnect to " + host + ":" + port + " Attempt:" + attempts);
-                        isConnected = createSocket(host, port);
+                        setConnectionStatus(createSocket(host, port));
                         lastConnectionCheckTime = System.currentTimeMillis();
                     } else {
+                        if (AuthorizationHandler.getLogin() != null && AuthorizationHandler.getPassword() != null) {
+                            authorize(AuthorizationHandler.getLogin(),
+                                    AuthorizationHandler.getPassword(),
+                                    AuthorizationHandler::extractAccessRightMode);
+                        }
                         checkConnectionUntilDisconnect();
                     }
                 } catch (IOException e) {
@@ -154,8 +160,12 @@ public class NetworkService {
     }
 
     private void setConnectionStatus(boolean value) {
-        if (isConnected != value) {
-            listeners.forEach(i-> i.connectionStatusChanged(value));
+        if (isConnected != value && listeners != null) {
+            listeners.forEach(i-> {
+                if (i != null) {
+                    i.connectionStatusChanged(value);
+                }
+            });
         }
         isConnected = value;
     }
@@ -239,8 +249,6 @@ public class NetworkService {
         if (login == null || password == null) {
             throw new NullPointerException("Authorisation Error: login or password is null");
         }
-        //ЗАПОМНИТЬ ЛОГИН ПАРОЛЬ, ЧТОБ В СЛУЧАЕ ПЕРЕПОДЛЮЧЕНИЯ НЕ ЗАПРАШИВАТЬ СНОВА У ПОЛЬЗОВАТЕЛЯ ПАРОЛЬ
-        //И ЕСЛИ ПАРОЛЬ НЕ ПОДОШЕЛ ТО ВЫКИДЫВАТЬ НА СТРАНИЦУ
         byte[] body = JSONManager.dump(new HashMap<String, String>() {{
             put(Consts.DATA_TYPE_LOGIN, login);
             put(Consts.DATA_TYPE_PASSWORD, password);

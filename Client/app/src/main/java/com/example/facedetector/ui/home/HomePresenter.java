@@ -9,6 +9,7 @@ import android.util.Log;
 import androidx.annotation.RequiresApi;
 
 import com.example.facedetector.model.ConnectionStatusListener;
+import com.example.facedetector.ui.authorization.AuthorizationHandler;
 import com.example.facedetector.utils.Bundlebuilder;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.model.NetworkService;
@@ -30,15 +31,21 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
         this.currentView = currentView;
         this.faceDetector = new MyFaceDetector(currentView.getContext());
         this.model = NetworkService.getIntent();
+
         model.setConnectionStatusListener(this);
         currentView.setConnectionStatus(model.isConnected());
     }
 
     @Override
     public void addEmployee() {
-        Bundle bundle = new Bundle();
-        bundle.putInt(EmployeeActivity.BUNDLE_MODE_KEY, EmployeeActivity.ACTIVITY_ADD_MODE);
-        currentView.openEmployeeActivity(bundle);
+        if (Consts.ACCESS_VIEWER.equals(AuthorizationHandler.getCurrentRightMode())) {
+            currentView.displayText("You don't have permission");
+        }
+        else {
+            Bundle bundle = new Bundle();
+            bundle.putInt(EmployeeActivity.BUNDLE_MODE_KEY, EmployeeActivity.ACTIVITY_ADD_MODE);
+            currentView.openEmployeeActivity(bundle);
+        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -59,6 +66,8 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
     @Override
     public void signOut() {
         model.disconnect();
+        AuthorizationHandler.setLogin(null);
+        AuthorizationHandler.setPassword(null);
         currentView.openAuthorizationActivity();
     }
 
@@ -88,13 +97,17 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
         if (data.containsKey(Consts.DATA_TYPE_CODE)
                 && Consts.CODE_ERROR.equals(JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE)))) {
 
+            String errorRequest = data.keySet().iterator().next();
             String errorMsg = JSONManager.parseToStr(data.values().iterator().next());
+
             currentView.displayText(errorMsg);
+            if (Consts.MSG_TYPE_AUTHORIZE.equals(errorRequest)) {
+                signOut();
+            }
             return;
         }
 
         Bundle bundle = Bundlebuilder.build(data);
-        bundle.keySet().forEach(key -> Log.e("PassSystem", "BUNDLE HOME_PRESENTER " + key + " " + bundle.get(key)));
         bundle.putInt(EmployeeActivity.BUNDLE_MODE_KEY,
                 EmployeeActivity.ACTIVITY_EDIT_MODE);
         currentView.openEmployeeActivity(bundle);

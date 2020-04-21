@@ -1,7 +1,5 @@
 package com.example.facedetector.ui.authorization;
 
-import android.util.Log;
-
 import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.utils.Consts;
@@ -16,8 +14,8 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
     private AuthorizationViewContract.View currentView;
     private NetworkService model;
 
-    String host = "192.168.0.102";
-    int port = 8000;
+    private String host = "192.168.0.102";
+    private int port = 8000;
 
     AuthorizationPresenter(AuthorizationViewContract.View currentView) {
         this.currentView = currentView;
@@ -29,6 +27,7 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
     @Override
     public void signIn() {
         if (!model.isConnected()) {
+            AuthorizationHandler.clearData();
             model.connect(host, port);
         }
         String login = currentView.getLogin();
@@ -38,12 +37,14 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
             currentView.displayMsg("Fill all the fields");
             return;
         }
+        AuthorizationHandler.setLogin(login);
+        AuthorizationHandler.setPassword(password);
+
         model.authorize(login, password, this);
     }
 
     @Override
     public void callback(Map<String, byte[]> data) {
-        Log.e("PassSystem", "CALLBACK " + data.toString());
         if (data.isEmpty()) {
             currentView.displayMsg("Failed receiving data from server");
         }
@@ -51,9 +52,10 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
             String code = JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE));
             if (Consts.CODE_ERROR.equals(code)) {
                 currentView.displayMsg(JSONManager.parseToStr(data.values().iterator().next()));
+                AuthorizationHandler.clearData();
                 return;
             }
-            CURRENT_RIGHTS = JSONManager.parseToStr(data.get(Consts.MSG_TYPE_AUTHORIZE));
+            AuthorizationHandler.extractAccessRightMode(data);
             currentView.openMainActivity();
         }
     }

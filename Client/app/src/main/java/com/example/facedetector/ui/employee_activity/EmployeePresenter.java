@@ -8,6 +8,7 @@ import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.model.employee.IndexedEmployee;
 import com.example.facedetector.model.employee.NotIndexedEmployee;
+import com.example.facedetector.ui.authorization.AuthorizationHandler;
 import com.example.facedetector.utils.Bundlebuilder;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.JSONManager;
@@ -65,37 +66,51 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
         return stream.toByteArray();
     }
 
+    private boolean isViewer() {
+        if (Consts.ACCESS_VIEWER.equals(AuthorizationHandler.getCurrentRightMode())) {
+            currentView.displayMsg("You don't have permission");
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void addEmployee() {
-        notIndexedEmployee = getEmployeeDataFromView();
-        if (notIndexedEmployee.hasEmptyField()) {
-            currentView.displayMsg("Fill all the fields");
-            return;
+        if (!isViewer()) {
+            notIndexedEmployee = getEmployeeDataFromView();
+            if (notIndexedEmployee.hasEmptyField()) {
+                currentView.displayMsg("Fill all the fields");
+                return;
+            }
+            model.addEmployee(notIndexedEmployee, this);
+            currentView.setActivityEnabled(false);
         }
-        model.addEmployee(notIndexedEmployee, this);
-        currentView.setActivityEnabled(false);
     }
 
     @Override
     public void editEmployee() {
-        notIndexedEmployee = getEmployeeDataFromView();
-        if (notIndexedEmployee.hasEmptyField()) {
-            currentView.displayMsg("Fill all the fields");
-            return;
+        if (!isViewer()) {
+            notIndexedEmployee = getEmployeeDataFromView();
+            if (notIndexedEmployee.hasEmptyField()) {
+                currentView.displayMsg("Fill all the fields");
+                return;
+            }
+            model.editEmployee(new IndexedEmployee(notIndexedEmployee, indexedEmployee.getId()), this);
+            currentView.setActivityEnabled(false);
         }
-        model.editEmployee(new IndexedEmployee(notIndexedEmployee, indexedEmployee.getId()), this);
-        currentView.setActivityEnabled(false);
     }
 
     @Override
     public void deleteEmployee() {
-        String id = indexedEmployee.getId();
-        if (id == null) {
-            currentView.displayMsg("There's no employee data from server");
-            return;
+        if (!isViewer()) {
+            String id = indexedEmployee.getId();
+            if (id == null) {
+                currentView.displayMsg("There's no employee data from server");
+                return;
+            }
+            model.deleteEmployee(id, this);
+            currentView.setActivityEnabled(false);
         }
-        model.deleteEmployee(id, this);
-        currentView.setActivityEnabled(false);
     }
 
     @Override
