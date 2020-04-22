@@ -1,8 +1,11 @@
 package com.example.facedetector.utils;
 
+import android.util.Log;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 
 public class JSONManager {
@@ -23,12 +26,12 @@ public class JSONManager {
         if (str == null || str.isEmpty()) {
             return null;
         }
-        String precessedStr = str.replaceAll("[\\[\\]{}\\s\"\']", "");
-        String[] pairsArray = precessedStr.split(",");
+        String precessedStr = str.replaceAll("[\\[\\]{}\"\']", "");
+        String[] pairsArray = precessedStr.split("\\s*,\\s*");
 
         Map<String, String> result = new LinkedHashMap<>();
         for (String item: pairsArray) {
-            String[] pair = item.split(":");
+            String[] pair = item.split("\\s*:\\s*");
             if (pair.length != 2) {
                 continue;
             }
