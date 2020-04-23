@@ -35,8 +35,7 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
     public EmployeePresenter(EmployeeActivity currentView, Bundle bundle) {
         this.currentView = currentView;
         if (bundle != null) {
-            activity_access_mode = bundle.getInt(Consts.DATA_TYPE_BUNDLE);
-            currentView.setActivityMode(activity_access_mode);
+            setActivityMode(bundle.getInt(Consts.DATA_TYPE_BUNDLE));
 
             if (activity_access_mode == EmployeeActivity.ACTIVITY_VIEW_MODE) {
                 fillViewFields(bundle);
@@ -45,6 +44,11 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
                 model.getAllDepartments(this);
             }
         }
+    }
+
+    private void setActivityMode(int mode) {
+        activity_access_mode = mode;
+        currentView.setActivityMode(activity_access_mode);
     }
 
     @Override
@@ -138,8 +142,7 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
     @Override
     public void openEditMode() {
         model.getAllDepartments(this);
-        activity_access_mode = EmployeeActivity.ACTIVITY_EDIT_MODE;
-        currentView.setActivityMode(activity_access_mode);
+        setActivityMode(EmployeeActivity.ACTIVITY_EDIT_MODE);
     }
 
     private List<String> swapFirstElementWith(List<String> list, String swapItem) {
@@ -210,6 +213,6 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
                 return;
             }
         }
-        currentView.setActivityMode(EmployeeActivity.ACTIVITY_VIEW_MODE);
+        setActivityMode(EmployeeActivity.ACTIVITY_VIEW_MODE);
     }
 }

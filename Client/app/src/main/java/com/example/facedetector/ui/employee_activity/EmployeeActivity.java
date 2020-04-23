@@ -170,18 +170,6 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
         fieldLastName.setText(lastName);
     }
 
-//    @Override
-//    public void setDepartment(String department) {
-//        runOnUiThread(()-> {
-//            fieldDepartment.setText(department);
-//        });
-//    }
-
-//    @Override
-//    public void setPosition(String position) {
-//        runOnUiThread(()->fieldPosition.setText(position));
-//    }
-
     @Override
     public void setPhoto(Bitmap bitmap) {
         runOnUiThread(() -> imageView.setImageBitmap(bitmap));
