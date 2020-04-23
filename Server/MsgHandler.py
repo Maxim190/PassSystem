@@ -10,6 +10,7 @@ class RequestType:
     EDIT = "EDIT"
     DELETE = "DELETE"
     CHECK = "CHECK"
+    GET = "GET"
 
 
 class DataType:
@@ -20,9 +21,12 @@ class DataType:
     ACCESS_VIEWER = "viewer"
     PHOTO = "PHOTO"
     NAME = "name"
-    LAST_NAME = "lastName"
+    LAST_NAME = "last_name"
     BIRTH = "birth"
-    DEPARTMENT_ID = "departmentId"
+    DEPARTMENT_ID = "department_id"
+    DEPARTMENT = "department_name"
+    POSITION = "position_name"
+    DATA = "data"
     ID = "id"
     CODE = "code"
     CODE_SUCCESS = "1"
@@ -54,6 +58,8 @@ class MsgHandler:
             return self.recognize_face(request)
 
         if DataType.ACCESS_ADMIN == access_rights:
+            if request_header == RequestType.GET:
+                return self.get_request(request)
             if request_header == RequestType.ADD:
                 return self.add_employee(request)
             elif request_header == RequestType.EDIT:
@@ -67,6 +73,23 @@ class MsgHandler:
 
     def check_request(self):
         return success_msg(RequestType.CHECK, "RESPONSE")
+
+    def get_request(self, data):
+        request = data[RequestType.GET].decode('utf-8')
+
+        if request == DataType.DEPARTMENT:
+            return {
+                RequestType.GET: DataType.DEPARTMENT,
+                DataType.DATA: self.instances.DATA_BASE.get_all_departments(),
+                DataType.CODE: DataType.CODE_SUCCESS
+            }
+        else:
+            department_id = self.instances.DATA_BASE.get_department_id_by_name(request)
+            return {
+                RequestType.GET: DataType.POSITION,
+                DataType.DATA: self.instances.DATA_BASE.get_department_positions(department_id),
+                DataType.CODE: DataType.CODE_SUCCESS
+            }
 
     def recognize_face(self, data):
         photo_bytes = data[RequestType.RECOGNIZE]
@@ -130,10 +153,10 @@ class MsgHandler:
             employee_id = self.instances \
                 .DATA_BASE \
                 .add_employee(
-                data[DataType.NAME],
-                data[DataType.LAST_NAME],
-                data[DataType.BIRTH],
-                data[DataType.DEPARTMENT_ID])
+                    data[DataType.NAME],
+                    data[DataType.LAST_NAME],
+                    self.instances.DATA_BASE.get_department_id_by_name(data[DataType.DEPARTMENT]),
+                    self.instances.DATA_BASE.get_position_id_by_name(data[DataType.POSITION]))
 
             photo_file_path = self.instances.FACE_MANAGER \
                 .build_photo_path(employee_id)
@@ -141,10 +164,10 @@ class MsgHandler:
             self.instances \
                 .DATA_BASE \
                 .add_image_data(
-                employee_id,
-                photo_file_path,
-                self.instances.FACE_MANAGER
-                    .descriptor_to_string(descriptor))
+                    employee_id,
+                    photo_file_path,
+                    self.instances.FACE_MANAGER
+                        .descriptor_to_string(descriptor))
 
             self.instances.FACE_MANAGER \
                 .write_img(request[DataType.PHOTO], photo_file_path)
@@ -160,8 +183,8 @@ class MsgHandler:
                 data[DataType.ID],
                 data[DataType.NAME],
                 data[DataType.LAST_NAME],
-                data[DataType.BIRTH],
-                data[DataType.DEPARTMENT_ID])
+                self.instances.DATA_BASE.get_department_id_by_name(data[DataType.DEPARTMENT]),
+                self.instances.DATA_BASE.get_position_id_by_name(data[DataType.POSITION]))
 
             descriptor = self.instances \
                 .FACE_MANAGER \
@@ -176,9 +199,9 @@ class MsgHandler:
                 self.instances \
                     .DATA_BASE \
                     .edit_img_data(
-                    data[DataType.ID],
-                    photo_file_path,
-                    self.instances.FACE_MANAGER.descriptor_to_string(descriptor))
+                        data[DataType.ID],
+                        photo_file_path,
+                        self.instances.FACE_MANAGER.descriptor_to_string(descriptor))
 
                 self.instances.FACE_MANAGER \
                     .write_img(request[DataType.PHOTO], photo_file_path)

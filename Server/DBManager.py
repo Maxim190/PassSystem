@@ -52,10 +52,18 @@ class DB:
         return int(id)
 
     def get_employee_by_id(self, id):
-        query = "SELECT id, name, last_name, " \
-                "DATE_FORMAT(birth, \"%y-%m-%d\") AS birth, department_id " \
-                "FROM employees " \
-                "WHERE id=" + str(id)
+        query = """
+                SELECT id, name, last_name, department_name, position_name
+                FROM (
+                        SELECT id, name, last_name, department_name, position_id
+                        FROM employees
+                        LEFT JOIN departments
+                        ON employees.department_id=departments.department_id
+                    ) AS temp
+                LEFT JOIN positions
+                ON temp.position_id=positions.position_id
+                WHERE id = {}
+            """.format(str(id))
         self.cursor.execute(query)
 
         return self.cursor.fetchone()
@@ -67,18 +75,20 @@ class DB:
 
         return self.cursor.fetchall()
 
-    def add_employee(self, name, last_name, birth, department_id):
+    def add_employee(self, name, last_name, department_id, position_id):
         new_id = self.get_next_employee_id()
-        query = 'INSERT INTO employees VALUES ( {}, "{}", "{}", "{}", {} )' \
-            .format(str(new_id), name, last_name, birth, str(department_id))
+        query = 'INSERT INTO employees VALUES ( {}, "{}", "{}", {}, {} )' \
+            .format(str(new_id), name, last_name, str(department_id), str(position_id))
+        print(query)
         self.cursor.execute(query)
         self.conn.commit()
 
         return new_id
 
-    def edit_employee(self, id, name, last_name, birth, department_id):
-        query = 'UPDATE employees SET name="{}", last_name="{}", birth="{}", department_id={} WHERE id={}'\
-            .format(name, last_name, birth, str(department_id), str(id))
+    def edit_employee(self, id, name, last_name, department_id, position_id):
+        query = 'UPDATE employees SET name="{}", last_name="{}", department_id={}, position_id={} WHERE id={}'\
+            .format(name, last_name, str(department_id), str(position_id), str(id))
+        print("QUERY " + query)
         self.cursor.execute(query)
         self.conn.commit()
 
@@ -86,6 +96,30 @@ class DB:
         query = 'DELETE FROM employees WHERE id=' + str(id)
         self.cursor.execute(query)
         self.conn.commit()
+
+    def get_all_departments(self):
+        query = "SELECT department_name FROM departments"
+        self.cursor.execute(query)
+
+        return self.cursor.fetchall()
+
+    def get_department_id_by_name(self, department_name):
+        query = "SELECT department_id FROM departments WHERE department_name='" + str(department_name) + "'"
+        self.cursor.execute(query)
+
+        return self.cursor.fetchone()["department_id"]
+
+    def get_position_id_by_name(self, position_name):
+        query = "SELECT position_id FROM positions WHERE position_name='" + str(position_name) + "'"
+        self.cursor.execute(query)
+
+        return self.cursor.fetchone()["position_id"]
+
+    def get_department_positions(self, department_id):
+        query = "SELECT position_name FROM positions WHERE department_id=" + str(department_id)
+        self.cursor.execute(query)
+
+        return self.cursor.fetchall()
 
     def get_image_data(self, id):
         query = 'SELECT * FROM images_data WHERE id=' + str(id)
@@ -116,11 +150,11 @@ class DB:
         self.cursor.execute(query)
         self.conn.commit()
 
-    def get_all_departments(self):
-        query = 'SELECT * FROM departments'
-        self.cursor.execute(query)
-
-        return self.cursor.fetchall()
+    # def get_all_departments(self):
+    #     query = 'SELECT * FROM departments'
+    #     self.cursor.execute(query)
+    #
+    #     return self.cursor.fetchall()
 
     def add_department(self, id, name):
         query = 'INSERT INTO department VALUES ({}, "{}")'\
