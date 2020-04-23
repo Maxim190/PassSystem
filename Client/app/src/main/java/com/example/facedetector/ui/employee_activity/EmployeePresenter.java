@@ -3,7 +3,10 @@ package com.example.facedetector.ui.employee_activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ArrayAdapter;
 
+import com.example.facedetector.R;
 import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.model.employee.IndexedEmployee;
@@ -14,6 +17,10 @@ import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.JSONManager;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgListener {
@@ -21,24 +28,39 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
     private NotIndexedEmployee notIndexedEmployee;
     private IndexedEmployee indexedEmployee;
 
+    private int activity_access_mode;
     private EmployeeActivity currentView;
     private NetworkService model = NetworkService.getIntent();
 
     public EmployeePresenter(EmployeeActivity currentView, Bundle bundle) {
         this.currentView = currentView;
         if (bundle != null) {
-            fillViewFields(bundle);
-            indexedEmployee = new IndexedEmployee(
-                    getEmployeeDataFromView(), bundle.getString(Consts.DATA_TYPE_ID));
-            currentView.setActivityMode(bundle.getInt(Consts.DATA_TYPE_BUNDLE));
+            activity_access_mode = bundle.getInt(Consts.DATA_TYPE_BUNDLE);
+            currentView.setActivityMode(activity_access_mode);
+
+            if (activity_access_mode == EmployeeActivity.ACTIVITY_VIEW_MODE) {
+                fillViewFields(bundle);
+            }
+            else {
+                model.getAllDepartments(this);
+            }
+        }
+    }
+
+    @Override
+    public void departmentSelected(String department) {
+        if (activity_access_mode != EmployeeActivity.ACTIVITY_VIEW_MODE) {
+            model.getDepartmentPositions(department, this);
         }
     }
 
     private void fillViewFields(Bundle bundle) {
         currentView.setName(bundle.getString(Consts.DATA_TYPE_NAME));
         currentView.setLastName(bundle.getString(Consts.DATA_TYPE_LAST_NAME));
-        currentView.setBirthDate(bundle.getString(Consts.DATA_TYPE_BIRTH));
-        currentView.setDepartmentId(bundle.getString(Consts.DATA_TYPE_DEPARTMENT));
+        currentView.setDepartments(Collections.singletonList(bundle.getString(Consts.DATA_TYPE_DEPARTMENT)));
+        currentView.setPositions(Collections.singletonList(bundle.getString(Consts.DATA_TYPE_POSITION)));
+        indexedEmployee = new IndexedEmployee(
+                getEmployeeDataFromView(), bundle.getString(Consts.DATA_TYPE_ID));
 
         byte[] photo = bundle.getByteArray(Consts.DATA_TYPE_PHOTO);
         if (photo != null) {
@@ -49,10 +71,10 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
 
     private NotIndexedEmployee getEmployeeDataFromView() {
         return new NotIndexedEmployee(
-                currentView.getDepartmentId(),
                 currentView.getName(),
                 currentView.getLastName(),
-                currentView.getBirthDate(),
+                currentView.getDepartment(),
+                currentView.getPosition(),
                 convertBitmapToArray(currentView.getPhoto())
         );
     }
@@ -114,6 +136,40 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
     }
 
     @Override
+    public void openEditMode() {
+        model.getAllDepartments(this);
+        activity_access_mode = EmployeeActivity.ACTIVITY_EDIT_MODE;
+        currentView.setActivityMode(activity_access_mode);
+    }
+
+    private List<String> swapFirstElementWith(List<String> list, String swapItem) {
+        if (list.contains(swapItem)) {
+            int swapItemIndex = list.indexOf(swapItem);
+            String buffer = list.get(0);
+            list.set(0, swapItem);
+            list.set(swapItemIndex, buffer);
+        }
+        return list;
+    }
+
+    private void getCallbackHandler(Map<String, byte[]> data) {
+        String type = JSONManager.parseToStr(data.get(Consts.MSG_TYPE_GET));
+        List<String> array = new ArrayList<>(
+                JSONManager.parseToMap(data.get(Consts.DATA_TYPE_DATA)).values());
+
+        if (Consts.DATA_TYPE_DEPARTMENT.equals(type)) {
+            String selectedDepartment = currentView.getDepartment();
+            swapFirstElementWith(array, selectedDepartment);
+            currentView.setDepartments(array);
+        }
+        else if (Consts.DATA_TYPE_POSITION.equals(type)){
+            String selectedPosition = currentView.getPosition();
+            swapFirstElementWith(array, selectedPosition);
+            currentView.setPositions(array);
+        }
+    }
+
+    @Override
     public void callback(Map<String, byte[]> data) {
         currentView.setActivityEnabled(true);
 
@@ -132,24 +188,28 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
             case Consts.MSG_TYPE_RECOGNIZE: {
                 currentView.displayMsg("Employee has already existed");
                 fillViewFields(Bundlebuilder.build(data));
-                currentView.setActivityMode(EmployeeActivity.ACTIVITY_EDIT_MODE);
                 break;
             }
             case Consts.MSG_TYPE_ADD: {
                 String id = JSONManager.parseToStr(data.get(Consts.MSG_TYPE_ADD));
                 indexedEmployee = new IndexedEmployee(getEmployeeDataFromView(), id);
                 currentView.displayMsg("Added new employee successfully");
-                currentView.setActivityMode(EmployeeActivity.ACTIVITY_EDIT_MODE);
+                break;
+            }
+            case  Consts.MSG_TYPE_EDIT: {
+                currentView.displayMsg(JSONManager.parseToStr(data.get(Consts.MSG_TYPE_EDIT)));
                 break;
             }
             case  Consts.MSG_TYPE_DELETE: {
                 currentView.displayMsg(JSONManager.parseToStr(data.get(Consts.MSG_TYPE_DELETE)));
                 currentView.closeActivity();
-                break;
+                return;
             }
-            case  Consts.MSG_TYPE_EDIT: {
-                currentView.displayMsg(JSONManager.parseToStr(data.get(Consts.MSG_TYPE_EDIT)));
+            case Consts.MSG_TYPE_GET: {
+                getCallbackHandler(data);
+                return;
             }
         }
+        currentView.setActivityMode(EmployeeActivity.ACTIVITY_VIEW_MODE);
     }
 }

@@ -287,17 +287,27 @@ public class NetworkService {
         if (photo == null || photo.length == 0) {
             throw new NullPointerException("Failed recognize employee: photo is missing");
         }
-        String jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
-            put(Consts.MSG_TYPE_RECOGNIZE, String.valueOf(photo.length));
-        }});
-
-        exchange(jsonHeader.getBytes(), photo, listener);
+        handleAndSend(Consts.MSG_TYPE_RECOGNIZE, photo, listener);
     }
 
     public void deleteEmployee(String id, MsgListener listener) {
         byte[] body = id.getBytes();
+        handleAndSend(Consts.MSG_TYPE_DELETE, body, listener);
+    }
+
+    public void getAllDepartments(MsgListener listener) {
+        byte[] body = Consts.DATA_TYPE_DEPARTMENT.getBytes();
+        handleAndSend(Consts.MSG_TYPE_GET, body, listener);
+    }
+
+    public void getDepartmentPositions(String department, MsgListener listener) {
+        byte[] body = department.getBytes();
+        handleAndSend(Consts.MSG_TYPE_GET, body, listener);
+    }
+
+    private void handleAndSend(String msgType, byte[] body, MsgListener listener) {
         String jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
-            put(Consts.MSG_TYPE_DELETE, String.valueOf(body.length));
+            put(msgType, String.valueOf(body.length));
         }});
 
         exchange(jsonHeader.getBytes(), body, listener);

@@ -1,26 +1,28 @@
 package com.example.facedetector.model.employee;
 
+import com.example.facedetector.utils.Consts;
+
 import java.util.HashMap;
 
 public class NotIndexedEmployee extends Employee {
 
-    private String departmentId;
     private String name;
     private String lastName;
-    private String birthDate;
+    private String department;
+    private String position;
     private byte[] photo;
 
-    public NotIndexedEmployee(String departmentId, String name,
-                              String lastName, String birthDate, byte[] photo) {
-        this.departmentId = departmentId;
+    public NotIndexedEmployee(String name, String lastName,
+                              String department, String position, byte[] photo) {
         this.name = name;
         this.lastName = lastName;
-        this.birthDate = birthDate;
+        this.department = department;
+        this.position = position;
         this.photo = photo;
     }
 
-    public String getDepartmentId() {
-        return departmentId;
+    public String getDepartment() {
+        return department;
     }
 
     public String getName() {
@@ -31,8 +33,8 @@ public class NotIndexedEmployee extends Employee {
         return lastName;
     }
 
-    public String getBirthDate() {
-        return birthDate;
+    public String getPosition() {
+        return position;
     }
 
     @Override
@@ -42,16 +44,16 @@ public class NotIndexedEmployee extends Employee {
 
     public boolean hasEmptyField() {
         return name.isEmpty() || lastName.isEmpty() ||
-                birthDate.isEmpty() || photo.length == 0;
+                department.isEmpty() || position.isEmpty() || photo.length == 0;
     }
 
     @Override
     public HashMap<String, String> toHashMapExcludingPhoto() {
         return new HashMap<String, String>(){{
-            put("departmentId", String.valueOf(departmentId));
-            put("name", name);
-            put("lastName", lastName);
-            put("birth", birthDate);
+            put(Consts.DATA_TYPE_NAME, name);
+            put(Consts.DATA_TYPE_LAST_NAME, lastName);
+            put(Consts.DATA_TYPE_DEPARTMENT, department);
+            put(Consts.DATA_TYPE_POSITION, position);
         }};
     }
 }

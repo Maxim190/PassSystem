@@ -150,10 +150,9 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
             }
             return;
         }
-
         Bundle bundle = Bundlebuilder.build(data);
         bundle.putInt(Consts.DATA_TYPE_BUNDLE,
-                EmployeeActivity.ACTIVITY_EDIT_MODE);
+                EmployeeActivity.ACTIVITY_VIEW_MODE);
         openEmployeeActivity(bundle);
     }
 

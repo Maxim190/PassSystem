@@ -3,35 +3,46 @@ package com.example.facedetector.ui.employee_activity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.PhotoManager;
 
+import java.util.List;
+
 public class EmployeeActivity extends AppCompatActivity implements EmployeeViewContract.View {
 
     public static final int ACTIVITY_ADD_MODE = 0;
     public static final int ACTIVITY_EDIT_MODE = 1;
+    public static final int ACTIVITY_VIEW_MODE = 2;
 
     private ImageView imageView;
     private EditText fieldName;
     private EditText fieldLastName;
-    private EditText fieldBirth;
-    private EditText fieldDepartment;
+//    private EditText fieldDepartment;
+//    private EditText fieldPosition;
     private Button buttonAddEmployee;
     private Button buttonEditEmployee;
     private Button buttonDeleteEmployee;
+    private Button buttonHamburger;
+    private Spinner spinnerDepartments;
+    private Spinner spinnerPositions;
 
     private EmployeePresenter presenter;
     private AlertDialog.Builder dialog;
@@ -43,52 +54,66 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
 
         fieldName = findViewById(R.id.nameEditText);
         fieldLastName = findViewById(R.id.lastNameEditText);
-        fieldBirth = findViewById(R.id.birthEditText);
-        fieldDepartment = findViewById(R.id.departmentEditText);
+//        fieldDepartment = findViewById(R.id.editText_department);
+//        fieldPosition = findViewById(R.id.editText_position);
 
         imageView = findViewById(R.id.imageView);
-        imageView.setOnClickListener(this::takePhotoBtnClicked);
+        imageView.setOnClickListener(v-> PhotoManager.requestPhoto(this));
 
         buttonAddEmployee = findViewById(R.id.button_add_employee);
-        buttonAddEmployee.setOnClickListener(this::addBtnClicked);
+        buttonAddEmployee.setOnClickListener(v-> presenter.addEmployee());
 
         buttonEditEmployee = findViewById(R.id.button_edit_employee);
-        buttonEditEmployee.setOnClickListener(this::editBtnClicked);
+        buttonEditEmployee.setOnClickListener(v-> presenter.editEmployee());
 
         buttonDeleteEmployee = findViewById(R.id.button_delete_employee);
-        buttonDeleteEmployee.setOnClickListener(this::deleteBtnClicked);
+        buttonDeleteEmployee.setOnClickListener(v-> presenter.deleteEmployee());
+
+        buttonHamburger = findViewById(R.id.button_hamburger);
+        buttonHamburger.setOnClickListener(v-> presenter.openEditMode());
+
+        spinnerPositions = findViewById(R.id.spinner_positions);
+        spinnerDepartments = findViewById(R.id.spinner_departments);
+        spinnerDepartments.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                TextView item = (TextView) view;
+                presenter.departmentSelected(item.getText().toString());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         presenter = new EmployeePresenter(this, getIntent().getBundleExtra(Consts.DATA_TYPE_BUNDLE));
     }
 
     public void setActivityMode(int mode) {
         runOnUiThread(()-> {
+            boolean isEnabled = true;
             if (mode == ACTIVITY_EDIT_MODE) {
                 buttonAddEmployee.setVisibility(View.INVISIBLE);
                 buttonEditEmployee.setVisibility(View.VISIBLE);
                 buttonDeleteEmployee.setVisibility(View.VISIBLE);
-            } else {
+                buttonHamburger.setVisibility(View.GONE);
+            }
+            else if (mode == ACTIVITY_ADD_MODE){
                 buttonAddEmployee.setVisibility(View.VISIBLE);
                 buttonEditEmployee.setVisibility(View.INVISIBLE);
                 buttonDeleteEmployee.setVisibility(View.INVISIBLE);
+                buttonHamburger.setVisibility(View.GONE);
             }
+            else {
+                buttonAddEmployee.setVisibility(View.INVISIBLE);
+                buttonEditEmployee.setVisibility(View.INVISIBLE);
+                buttonDeleteEmployee.setVisibility(View.GONE);
+                buttonHamburger.setVisibility(View.VISIBLE);
+                isEnabled = false;
+            }
+            fieldName.setEnabled(isEnabled);
+            fieldLastName.setEnabled(isEnabled);
+            imageView.setClickable(isEnabled);
         });
-    }
-
-    public void addBtnClicked(View view) {
-        presenter.addEmployee();
-    }
-
-    public void editBtnClicked(View view) {
-        presenter.editEmployee();
-    }
-
-    public void deleteBtnClicked(View view) {
-        presenter.deleteEmployee();
-    }
-
-    public void takePhotoBtnClicked(View view) {
-        PhotoManager.requestPhoto(this);
     }
 
     @Override
@@ -99,27 +124,6 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
             imageView.setImageBitmap(bmp);
         }
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void addEmployeeBtnClicked(View view) {
-        presenter.addEmployee();
-    }
-
-//    private void resizeLayout() {
-//        DisplayMetrics dm = new DisplayMetrics();
-//        getWindowManager().getDefaultDisplay().getMetrics(dm);
-//
-//        int width = dm.widthPixels;
-//        int height = dm.heightPixels;
-//
-//        getWindow().setLayout((int)(width * .8), (int)(height * .7));
-//
-//        WindowManager.LayoutParams params = getWindow().getAttributes();
-//        params.gravity = Gravity.CENTER;
-//        params.x = 0;
-//        params.y = -20;
-//        getWindow().setAttributes(params);
-//    }
 
     public void closeActivity(View view) {
         finish();
@@ -136,14 +140,11 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     }
 
     @Override
-    public String getBirthDate() {
-        return fieldBirth.getText().toString();
+    public String getDepartment() {
+        return (String)spinnerDepartments.getSelectedItem();
     }
 
-    @Override
-    public String getDepartmentId() {
-        return fieldDepartment.getText().toString();
-    }
+    @Override public String getPosition() { return (String)spinnerPositions.getSelectedItem(); }
 
     @Override
     public Bitmap getPhoto() {
@@ -169,19 +170,44 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
         fieldLastName.setText(lastName);
     }
 
-    @Override
-    public void setBirthDate(String birthDate) {
-        runOnUiThread(()->fieldBirth.setText(birthDate));
-    }
+//    @Override
+//    public void setDepartment(String department) {
+//        runOnUiThread(()-> {
+//            fieldDepartment.setText(department);
+//        });
+//    }
 
-    @Override
-    public void setDepartmentId(String departmentId) {
-        runOnUiThread(()->fieldDepartment.setText(departmentId));
-    }
+//    @Override
+//    public void setPosition(String position) {
+//        runOnUiThread(()->fieldPosition.setText(position));
+//    }
 
     @Override
     public void setPhoto(Bitmap bitmap) {
         runOnUiThread(() -> imageView.setImageBitmap(bitmap));
+    }
+
+    private ArrayAdapter<String> getAdapter(List<String> data) {
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this,
+                R.layout.spinner_item_layout, data);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        return dataAdapter;
+    }
+
+    @Override
+    public void setDepartments(List<String> data) {
+        runOnUiThread(()->{
+            spinnerDepartments.setAdapter(getAdapter(data));
+            spinnerDepartments.setClickable(data.size() > 1);
+        });
+    }
+
+    @Override
+    public void setPositions(List<String> data) {
+        runOnUiThread(()->{
+            spinnerPositions.setAdapter(getAdapter(data));
+            spinnerPositions.setClickable(data.size() > 1);
+        });
     }
 
     @Override

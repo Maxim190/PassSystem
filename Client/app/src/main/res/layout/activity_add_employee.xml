@@ -17,23 +17,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/takePhotoBtn"
-            android:layout_width="220dp"
-            android:layout_height="wrap_content"
-            android:onClick="takePhotoBtnClicked"
-            android:text="Take a photo"
-            android:visibility="gone"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView" />
-
         <EditText
             android:id="@+id/nameEditText"
             android:layout_width="220dp"
-            android:layout_height="55dp"
-            android:hint="NAME"
+            android:layout_height="wrap_content"
+            android:theme="@style/EditTextStyle"
+            android:hint="Name"
             android:inputType="text"
-            android:textColor="@color/colorWhite"
             app:layout_constraintBottom_toTopOf="@+id/lastNameEditText"
             app:layout_constraintStart_toStartOf="@+id/imageView" />
 
@@ -41,9 +31,9 @@
             android:id="@+id/lastNameEditText"
             android:layout_width="220dp"
             android:layout_height="wrap_content"
-            android:hint="LAST_NAME"
+            android:hint="Last name"
+            android:theme="@style/EditTextStyle"
             android:inputType="text"
-            android:textColor="@color/colorWhite"
             app:layout_constraintBottom_toTopOf="@+id/imageView"
             app:layout_constraintStart_toStartOf="@+id/imageView" />
 
@@ -69,25 +59,44 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <EditText
-            android:id="@+id/birthEditText"
-            android:layout_width="220dp"
+<!--        <EditText-->
+<!--            android:id="@+id/editText_department"-->
+<!--            android:layout_width="220dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="30dp"-->
+<!--            android:layout_marginTop="20dp"-->
+<!--            android:hint="DEPARTMENT"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--        <EditText-->
+<!--            android:id="@+id/editText_position"-->
+<!--            android:layout_width="220dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="POSITION"-->
+<!--            android:inputType="numberDecimal"-->
+<!--            app:layout_constraintStart_toStartOf="@+id/editText_department"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/editText_department" />-->
+
+        <Spinner
+            android:id="@+id/spinner_departments"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
+            android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
-            android:hint="BIRTH"
-            android:inputType="date"
+            android:spinnerMode="dialog"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <EditText
-            android:id="@+id/departmentEditText"
-            android:layout_width="220dp"
+        <Spinner
+            android:id="@+id/spinner_positions"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="DEPARTMENT"
-            android:inputType="numberDecimal"
-            app:layout_constraintStart_toStartOf="@+id/birthEditText"
-            app:layout_constraintTop_toBottomOf="@+id/birthEditText" />
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:spinnerMode="dialog"
+            app:layout_constraintStart_toStartOf="@+id/spinner_departments"
+            app:layout_constraintTop_toBottomOf="@id/spinner_departments" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -107,11 +116,8 @@
                 android:layout_marginRight="10dp"
                 android:layout_weight="1"
                 android:background="@drawable/button_pink_oval"
-                android:onClick="addEmployeeBtnClicked"
+                android:theme="@style/ButtonStyle"
                 android:text="Add"
-                android:textAllCaps="false"
-                android:textColor="@color/colorWhite"
-                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
@@ -122,10 +128,8 @@
                 android:layout_marginRight="10dp"
                 android:layout_weight="1"
                 android:background="@drawable/button_pink_oval"
+                android:theme="@style/ButtonStyle"
                 android:text="Edit"
-                android:textAllCaps="false"
-                android:textColor="@color/colorWhite"
-                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/button_add_employee" />
 
@@ -135,12 +139,19 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:background="@drawable/button_pink_oval"
+                android:theme="@style/ButtonStyle"
                 android:text="Delete"
-                android:textAllCaps="false"
-                android:textColor="@color/colorWhite"
-                android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/button_edit_employee" />
+
+            <Button
+                android:id="@+id/button_hamburger"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/button_pink_oval"
+                android:theme="@style/ButtonStyle"
+                android:text="&#8801;"/>
 
         </LinearLayout>
 
