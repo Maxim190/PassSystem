@@ -26,19 +26,25 @@ public class JSONManager {
         if (str == null || str.isEmpty()) {
             return null;
         }
+        //Log.e("PassSystem", "Parse " + str);
         String precessedStr = str.replaceAll("[\\[\\]{}\"\']", "");
         String[] pairsArray = precessedStr.split("\\s*,\\s*");
 
+        int keyPostfix = 0;
+        int keyIndex = 0;
+        int valueIndex = 1;
         Map<String, String> result = new LinkedHashMap<>();
         for (String item: pairsArray) {
             String[] pair = item.split("\\s*:\\s*");
             if (pair.length != 2) {
                 continue;
             }
-            String key = pair[0].replaceAll("[\"']", "");
-            String value = pair[1].replaceAll("[\"']", "");
-            result.put(key, value);
+            if (result.containsKey(pair[keyIndex])) {
+                pair[keyIndex] += keyPostfix++;
+            }
+            result.put(pair[keyIndex], pair[valueIndex]);
         }
+        //result.forEach((k, v)-> Log.e("PassSystem", "key:" + k + " value:" + v));
         return result;
     }
 
