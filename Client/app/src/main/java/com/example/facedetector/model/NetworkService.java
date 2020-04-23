@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -237,7 +238,12 @@ public class NetworkService {
         return result;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private synchronized void sendMsg(byte[] jsonHeader, byte[] body) throws IOException {
+        if (jsonHeader.length < 64) {
+            jsonHeader = mergeArrays(jsonHeader, String.join("",
+                            Collections.nCopies((64 - jsonHeader.length), "x")).getBytes());
+        }
         outputStream.write(jsonHeader);
         outputStream.flush();
         outputStream.write(body);

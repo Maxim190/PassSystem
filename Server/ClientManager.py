@@ -56,12 +56,13 @@ def build_response(msg):
 
 
 def get_msg(socket):
-    raw_data = socket.recv(32)
+    raw_data = socket.recv(64)
     if raw_data is None or len(raw_data) == 0:
         raise ConnectionAbortedError("Get empty data packet")
     try:
         print(raw_data)
-        header = json.loads(raw_data)
+        dec_raw_data = raw_data.decode('utf-8')
+        header = json.loads(dec_raw_data[0: dec_raw_data.index('}') + 1])
     except JSONDecodeError as e:
         raise Exception('Invalid json: {}'.format(e)) from None
 
