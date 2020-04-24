@@ -137,8 +137,10 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
 
     @Override
     public void openEditMode() {
-        model.getAllDepartments(this);
-        setActivityMode(EmployeeActivity.ACTIVITY_EDIT_MODE);
+        if (!isViewer()) {
+            model.getAllDepartments(this);
+            setActivityMode(EmployeeActivity.ACTIVITY_EDIT_MODE);
+        }
     }
 
     private List<String> swapFirstElementWith(List<String> list, String swapItem) {

@@ -9,18 +9,22 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
+import com.example.facedetector.ui.authorization.AuthorizationHandler;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.PhotoManager;
 
@@ -197,9 +201,7 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     @Override
     public void displayMsg(String msg) {
         runOnUiThread(()-> {
-            dialog = new AlertDialog.Builder(this);
-            dialog.setMessage(msg);
-            dialog.show();
+            Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
         });
     }
 
