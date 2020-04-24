@@ -118,7 +118,7 @@ public class NetworkService {
                         if (AuthorizationHandler.getLogin() != null && AuthorizationHandler.getPassword() != null) {
                             authorize(AuthorizationHandler.getLogin(),
                                     AuthorizationHandler.getPassword(),
-                                    AuthorizationHandler::extractAccessRightMode);
+                                    AuthorizationHandler::extractAccessRightData);
                         }
                         checkConnectionUntilDisconnect();
                     }

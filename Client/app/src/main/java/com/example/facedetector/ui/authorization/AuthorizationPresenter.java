@@ -54,13 +54,8 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
                 AuthorizationHandler.clearData();
                 return;
             }
-            AuthorizationHandler.extractAccessRightMode(data);
-
-            Bundle bundle = new Bundle();
-            Map<String, String> array = JSONManager.parse(
-                    new String(data.get(Consts.MSG_TYPE_AUTHORIZE)));
-            array.forEach(bundle::putString);
-            currentView.openMainActivity(bundle);
+            AuthorizationHandler.extractAccessRightData(data);
+            currentView.openMainActivity(AuthorizationHandler.getEmployeeBundle());
         }
     }
 }

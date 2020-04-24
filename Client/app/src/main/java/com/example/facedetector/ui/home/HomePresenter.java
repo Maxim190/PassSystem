@@ -3,28 +3,25 @@ package com.example.facedetector.ui.home;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
-
-import androidx.annotation.RequiresApi;
 
 import com.example.facedetector.model.ConnectionStatusListener;
+import com.example.facedetector.model.MsgListener;
+import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.ui.authorization.AuthorizationActivity;
 import com.example.facedetector.ui.authorization.AuthorizationHandler;
 import com.example.facedetector.ui.connection.ConnectionActivity;
+import com.example.facedetector.ui.employee_activity.EmployeeActivity;
 import com.example.facedetector.utils.Bundlebuilder;
 import com.example.facedetector.utils.Consts;
-import com.example.facedetector.model.NetworkService;
-import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.utils.JSONManager;
 import com.example.facedetector.utils.MyFaceDetector;
-import com.example.facedetector.ui.employee_activity.EmployeeActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Map;
 
-public class HomePresenter implements HomeInterface.Presenter, MsgListener, ConnectionStatusListener {
+public class HomePresenter implements HomeInterface.Presenter, MsgListener,
+        ConnectionStatusListener, AuthorizationHandler.AccessRightsListener {
 
     private final int CAMERA_REQUEST = 1888;
     private final int ACTIVITY_CLOSED = 1000;
@@ -40,6 +37,7 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
 
         extractFromBundle(bundle);
         model.setConnectionStatusListener(this);
+        AuthorizationHandler.setAccessRightsChangeListener(this);
         currentView.setConnectionStatus(model.isConnected());
     }
 
@@ -159,5 +157,15 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener, Conn
     @Override
     public void connectionStatusChanged(boolean isConnected) {
         currentView.setConnectionStatus(isConnected);
+    }
+
+    @Override
+    public void accessRightsChanged(String rightMode) {
+        if (rightMode == null) {
+            signOut();
+        }
+        else {
+            extractFromBundle(AuthorizationHandler.getEmployeeBundle());
+        }
     }
 }
