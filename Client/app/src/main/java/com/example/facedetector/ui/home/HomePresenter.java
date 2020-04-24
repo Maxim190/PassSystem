@@ -161,7 +161,7 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener,
 
     @Override
     public void accessRightsChanged(String rightMode) {
-        if (rightMode == null) {
+        if (rightMode.isEmpty()) {
             signOut();
         }
         else {

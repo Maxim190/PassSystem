@@ -1,6 +1,7 @@
 package com.example.facedetector.ui.authorization;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.JSONManager;
@@ -11,7 +12,7 @@ import java.util.Map;
 
 public class AuthorizationHandler {
 
-    private static String currentRightMode;
+    private static String currentRightMode = "";
     private static String login;
     private static String password;
     private static Bundle employeeBundle;
@@ -29,17 +30,18 @@ public class AuthorizationHandler {
     }
 
     private static void setRightMode(String newMode) {
-        if (!newMode.equals(currentRightMode)) {
-            currentRightMode = newMode;
+        if (!currentRightMode.equals(newMode)) {
+            currentRightMode = newMode == null ? "" : newMode;
             listeners.forEach(v -> {
                 if (v != null) {
-                    v.accessRightsChanged(newMode);
+                    v.accessRightsChanged(currentRightMode);
                 }
             });
         }
     }
 
-    private AuthorizationHandler(){}
+    private AuthorizationHandler(){
+    }
 
     public static Bundle getEmployeeBundle() {
         return employeeBundle;
@@ -68,12 +70,12 @@ public class AuthorizationHandler {
     public static void clearData() {
         login = null;
         password = null;
-        currentRightMode = null;
+        currentRightMode = "";
     }
 
     public static void extractAccessRightData(Map<String, byte[]> data) {
         if (data == null || data.isEmpty()) {
-            currentRightMode = null;
+            setRightMode("");
         }
         else if (data.containsKey(Consts.DATA_TYPE_CODE)) {
             String code = JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE));
@@ -86,6 +88,6 @@ public class AuthorizationHandler {
                 return;
             }
         }
-        setRightMode(null);
+        setRightMode("");
     }
 }
