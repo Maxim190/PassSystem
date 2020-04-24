@@ -1,16 +1,11 @@
 package com.example.facedetector.ui.home;
 
-import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -71,9 +66,16 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
         presenter.recognizeFace();
     }
 
-    public void startNewActivityForResult(Intent intent, int requestCode) {
-        runOnUiThread(()->startActivityForResult(intent, requestCode,
-                ActivityOptions.makeSceneTransitionAnimation(this).toBundle()));
+    public void startNewActivity(Intent intent, Integer resultCode) {
+        runOnUiThread(()-> {
+            if (resultCode != null) {
+                startActivityForResult(intent, resultCode,
+                        ActivityOptions.makeSceneTransitionAnimation(this).toBundle());
+            }
+            else {
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -117,7 +119,6 @@ public class HomeActivity extends AppCompatActivity implements HomeInterface.Vie
 
     public void displayText(String text) {
         runOnUiThread(() -> {
-            //new AlertDialog.Builder(this).setMessage(text).show();
             Toast toast = Toast.makeText(this, text, Toast.LENGTH_LONG);
             toast.setGravity(Gravity.TOP| Gravity.CENTER, 0, 50);
             toast.show();

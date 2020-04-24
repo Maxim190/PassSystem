@@ -1,7 +1,8 @@
 package com.example.facedetector.ui.authorization;
 
-import android.os.Bundle;
+import android.util.Log;
 
+import com.example.facedetector.model.ConnectionStatusListener;
 import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.utils.Consts;
@@ -9,9 +10,7 @@ import com.example.facedetector.utils.JSONManager;
 
 import java.util.Map;
 
-public class AuthorizationPresenter implements AuthorizationViewContract.Presenter, MsgListener {
-
-    public static String CURRENT_RIGHTS;
+public class AuthorizationPresenter implements AuthorizationViewContract.Presenter, MsgListener, ConnectionStatusListener {
 
     private AuthorizationViewContract.View currentView;
     private NetworkService model;
@@ -19,8 +18,8 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
     AuthorizationPresenter(AuthorizationViewContract.View currentView) {
         this.currentView = currentView;
         model = NetworkService.getIntent();
+        model.setConnectionStatusListener(this);
         model.connect(NetworkService.DEFAULT_HOST_IP);
-        CURRENT_RIGHTS = Consts.ACCESS_VIEWER;
     }
 
     @Override
@@ -28,6 +27,7 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
         if (!model.isConnected()) {
             AuthorizationHandler.clearData();
             model.connect(NetworkService.DEFAULT_HOST_IP);
+            return;
         }
         String login = currentView.getLogin();
         String password = currentView.getPassword();
@@ -55,7 +55,13 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
                 return;
             }
             AuthorizationHandler.extractAccessRightData(data);
+            model.deleteConnectionStatusListener(this);
             currentView.openMainActivity(AuthorizationHandler.getEmployeeBundle());
         }
+    }
+
+    @Override
+    public void connectionStatusChanged(boolean isConnected) {
+        currentView.displayConnectBtn(!isConnected);
     }
 }

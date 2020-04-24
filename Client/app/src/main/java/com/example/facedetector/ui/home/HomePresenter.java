@@ -70,7 +70,7 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener,
     private void openEmployeeActivity(Bundle bundle) {
         Intent intent = new Intent(currentView.getContext(), EmployeeActivity.class);
         intent.putExtra(Consts.DATA_TYPE_BUNDLE, bundle);
-        currentView.startNewActivityForResult(intent, 0);
+        currentView.startNewActivity(intent, null);
     }
 
     @Override
@@ -87,7 +87,7 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener,
 
     @Override
     public void recognizeFace() {
-        currentView.startNewActivityForResult(
+        currentView.startNewActivity(
                 new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE), CAMERA_REQUEST);
     }
 
@@ -120,16 +120,15 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener,
 
     @Override
     public void openConnectionActivity() {
-        currentView.startNewActivityForResult(
+        currentView.startNewActivity(
                 new Intent(currentView.getContext(), ConnectionActivity.class), ACTIVITY_CLOSED);
     }
 
     @Override
     public void signOut() {
         AuthorizationHandler.clearData();
-        model.disconnect();
-        currentView.startNewActivityForResult(
-                new Intent(currentView.getContext(), AuthorizationActivity.class), 0);
+        currentView.startNewActivity(
+                new Intent(currentView.getContext(), AuthorizationActivity.class), null);
     }
 
     @Override

@@ -58,6 +58,12 @@ public class NetworkService {
         statusListeners.add(listener);
     }
 
+    public void deleteConnectionStatusListener(ConnectionStatusListener listener) {
+        if (logListeners != null) {
+            logListeners.remove(listener);
+        }
+    }
+
     public void setLogListener(ConnectionLogListener listener) {
         if (logListeners == null) {
             logListeners = new ArrayList<>();
@@ -96,7 +102,9 @@ public class NetworkService {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void connect(String host) {
-        disconnect();
+        if (isConnected) {
+            disconnect();
+        }
         connectionThread = new Thread(() -> {
             try {
                 log( "Connecting to " + host + ":" + DEFAULT_PORT);
@@ -171,7 +179,6 @@ public class NetworkService {
                 }
             });
         }
-        Log.e("PassSystem", msg);
     }
 
     private void setConnectionStatus(boolean value) {

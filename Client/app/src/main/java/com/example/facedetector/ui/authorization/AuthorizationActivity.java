@@ -2,15 +2,16 @@ package com.example.facedetector.ui.authorization;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
+import com.example.facedetector.ui.connection.ConnectionActivity;
 import com.example.facedetector.ui.home.HomeActivity;
 import com.example.facedetector.utils.Consts;
 
@@ -20,6 +21,7 @@ public class AuthorizationActivity extends AppCompatActivity implements Authoriz
     private EditText fieldLogin;
     private EditText fieldPassword;
     private TextView errorMsgField;
+    private Button connectBtn;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,7 +35,15 @@ public class AuthorizationActivity extends AppCompatActivity implements Authoriz
         Button signInBtn = findViewById(R.id.button_sign_in);
         signInBtn.setOnClickListener(v-> signInButtonClicked());
 
+        connectBtn = findViewById(R.id.button_auth_connection);
+        connectBtn.setOnClickListener(this::connectBtnClicked);
+
         presenter = new AuthorizationPresenter(this);
+    }
+
+    public void connectBtnClicked(View v) {
+        Intent intent = new Intent(this, ConnectionActivity.class);
+        startActivity(intent);
     }
 
     public void signInButtonClicked() {
@@ -47,6 +57,11 @@ public class AuthorizationActivity extends AppCompatActivity implements Authoriz
             startActivity(intent);
             finish();
         });
+    }
+
+    @Override
+    public void displayConnectBtn(boolean isVisible) {
+        runOnUiThread(()-> connectBtn.setVisibility(isVisible ? View.VISIBLE : View.GONE));
     }
 
     @Override

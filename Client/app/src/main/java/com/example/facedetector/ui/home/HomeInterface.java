@@ -12,7 +12,7 @@ public interface HomeInterface {
         void displayText(String text);
         void setViewEnabled(boolean value);
         void setConnectionStatus(boolean value);
-        void startNewActivityForResult(Intent intent, int requestCode);
+        void startNewActivity(Intent intent, Integer resultCode);
         void setName(String name);
         void setPosition(String position);
     }
