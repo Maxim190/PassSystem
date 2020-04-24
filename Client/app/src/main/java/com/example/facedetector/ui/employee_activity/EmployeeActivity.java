@@ -113,6 +113,8 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
             fieldName.setEnabled(isEnabled);
             fieldLastName.setEnabled(isEnabled);
             imageView.setClickable(isEnabled);
+            spinnerDepartments.setClickable(isEnabled);
+            spinnerPositions.setClickable(isEnabled);
         });
     }
 
@@ -186,7 +188,6 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     public void setDepartments(List<String> data) {
         runOnUiThread(()->{
             spinnerDepartments.setAdapter(getAdapter(data));
-            spinnerDepartments.setClickable(data.size() > 1);
         });
     }
 
@@ -194,7 +195,6 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     public void setPositions(List<String> data) {
         runOnUiThread(()->{
             spinnerPositions.setAdapter(getAdapter(data));
-            spinnerPositions.setClickable(data.size() > 1);
         });
     }
 
