@@ -23,12 +23,12 @@ def run(socket, instances, access_rights):
         except ConnectionAbortedError:
             print("Connection lost with " + str(socket))
             raise ConnectionAbortedError
-        # except Exception as e:
-        #     print("An error has occurred " + str(e))
-        #     msg = build_response(
-        #         error_msg("Error", str(e)))
-        #     send_msg(socket, *msg)
-        #     pass
+        except Exception as e:
+            print("An error has occurred " + str(e))
+            msg = build_response(
+                error_msg("Error", str(e)))
+            send_msg(socket, *msg)
+            pass
 
 
 def send_msg(socket, header, body):

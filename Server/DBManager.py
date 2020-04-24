@@ -150,12 +150,6 @@ class DB:
         self.cursor.execute(query)
         self.conn.commit()
 
-    # def get_all_departments(self):
-    #     query = 'SELECT * FROM departments'
-    #     self.cursor.execute(query)
-    #
-    #     return self.cursor.fetchall()
-
     def add_department(self, id, name):
         query = 'INSERT INTO department VALUES ({}, "{}")'\
             .format(str(id), name)

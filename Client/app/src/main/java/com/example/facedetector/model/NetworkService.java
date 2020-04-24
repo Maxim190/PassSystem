@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class NetworkService {
 
-    public static final String DEFAULT_HOST_IP = "192.168.0.102";
+    public static final String DEFAULT_HOST_IP = "192.168.0.103";
     private static final int DEFAULT_PORT = 8000;
 
     private static NetworkService intent;
@@ -200,13 +200,14 @@ public class NetworkService {
         byte[] bytes = new byte[size];
         if (inputStream.read(bytes) == -1) {
             isConnected = false;
-            throw new IOException("Failed receiving msg from server");
+            throw new IOException("Failed receiving msg from server: no byte is available");
         }
         return bytes;
     }
 
     private synchronized byte[] receiveTotalBytes(int size) throws IOException {
         byte[] bytes = new byte[size];
+        Log.e("PassSystem", "Waiting .." + size);
         inputStream.readFully(bytes);
         return bytes;
     }

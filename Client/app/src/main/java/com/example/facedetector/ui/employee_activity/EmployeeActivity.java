@@ -35,8 +35,6 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     private ImageView imageView;
     private EditText fieldName;
     private EditText fieldLastName;
-//    private EditText fieldDepartment;
-//    private EditText fieldPosition;
     private Button buttonAddEmployee;
     private Button buttonEditEmployee;
     private Button buttonDeleteEmployee;
@@ -54,8 +52,6 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
 
         fieldName = findViewById(R.id.nameEditText);
         fieldLastName = findViewById(R.id.lastNameEditText);
-//        fieldDepartment = findViewById(R.id.editText_department);
-//        fieldPosition = findViewById(R.id.editText_position);
 
         imageView = findViewById(R.id.imageView);
         imageView.setOnClickListener(v-> PhotoManager.requestPhoto(this));

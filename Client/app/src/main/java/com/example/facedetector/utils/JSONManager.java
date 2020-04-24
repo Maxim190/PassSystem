@@ -26,7 +26,7 @@ public class JSONManager {
         if (str == null || str.isEmpty()) {
             return null;
         }
-        //Log.e("PassSystem", "Parse " + str);
+        Log.e("PassSystem", "Parse " + str);
         String precessedStr = str.replaceAll("[\\[\\]{}\"\']", "");
         String[] pairsArray = precessedStr.split("\\s*,\\s*");
 
@@ -44,7 +44,7 @@ public class JSONManager {
             }
             result.put(pair[keyIndex], pair[valueIndex]);
         }
-        //result.forEach((k, v)-> Log.e("PassSystem", "key:" + k + " value:" + v));
+        result.forEach((k, v)-> Log.e("PassSystem", "key:" + k + " value:" + v));
         return result;
     }
 

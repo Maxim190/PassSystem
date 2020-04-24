@@ -3,10 +3,7 @@ package com.example.facedetector.ui.employee_activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.util.Log;
-import android.widget.ArrayAdapter;
 
-import com.example.facedetector.R;
 import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.model.employee.IndexedEmployee;
@@ -18,7 +15,6 @@ import com.example.facedetector.utils.JSONManager;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
