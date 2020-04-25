@@ -26,6 +26,11 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
+    <style name="ConnectionActivityStyle.Style" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:colorPrimaryDark">@color/colorPurple</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
     <style name="EditTextStyle">
         <item name="android:backgroundTint">@color/colorWhite</item>
         <item name="android:editTextColor">@color/colorWhite</item>

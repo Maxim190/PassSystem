@@ -13,7 +13,7 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".ui.connection.ConnectionActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
+            android:theme="@style/ConnectionActivityStyle.Style" />
         <activity
             android:name=".ui.employee_activity.EmployeeActivity"
             android:theme="@style/AppTheme.AddEmployee" />

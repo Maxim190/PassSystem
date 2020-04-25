@@ -27,7 +27,6 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
         if (!model.isConnected()) {
             AuthorizationHandler.clearData();
             model.connect(NetworkService.DEFAULT_HOST_IP);
-            return;
         }
         String login = currentView.getLogin();
         String password = currentView.getPassword();

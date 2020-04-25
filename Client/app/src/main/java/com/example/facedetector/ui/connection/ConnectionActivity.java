@@ -18,6 +18,7 @@ public class ConnectionActivity extends Activity implements ConnectionViewContra
     private ConnectionViewContract.Presenter presenter;
     private EditText ipField;
     private TextView log;
+    private TextView unlockBtnInfField;
     private Button connectBtn;
 
     @Override
@@ -25,6 +26,7 @@ public class ConnectionActivity extends Activity implements ConnectionViewContra
         super.onCreate(savedInstanceState);
         setContentView(R.layout.connection_fragment);
 
+        unlockBtnInfField = findViewById(R.id.textView_unlock_btn_inf);
         log = findViewById(R.id.textView_log);
         ipField = findViewById(R.id.editText_ip);
 
@@ -43,6 +45,7 @@ public class ConnectionActivity extends Activity implements ConnectionViewContra
         });
         connectBtn.setOnLongClickListener(v-> {
             isEnabled.set(true);
+            unlockBtnInfField.setVisibility(View.INVISIBLE);
             v.setBackground(getResources().getDrawable(R.drawable.button_pink_oval, null));
             return true;
         });
