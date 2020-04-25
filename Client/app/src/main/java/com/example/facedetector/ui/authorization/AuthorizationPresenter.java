@@ -24,6 +24,7 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
 
     @Override
     public void signIn() {
+        currentView.displayMsg("");
         if (!model.isConnected()) {
             AuthorizationHandler.clearData();
             model.connect(NetworkService.DEFAULT_HOST_IP);
