@@ -13,10 +13,10 @@
         tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".ui.connection.ConnectionActivity"
-            android:theme="@style/ConnectionActivityStyle.Style" />
+            android:theme="@style/PurpleStatusBarActivity" />
         <activity
             android:name=".ui.employee_activity.EmployeeActivity"
-            android:theme="@style/AppTheme.AddEmployee" />
+            android:theme="@style/PurpleStatusBarActivity" />
         <activity
             android:name=".ui.home.HomeActivity"
             android:theme="@style/AppTheme.NoActionBar" />

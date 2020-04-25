@@ -24,7 +24,7 @@ public class ConnectionActivity extends Activity implements ConnectionViewContra
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.connection_fragment);
+        setContentView(R.layout.activity_connection);
 
         unlockBtnInfField = findViewById(R.id.textView_unlock_btn_inf);
         log = findViewById(R.id.textView_log);

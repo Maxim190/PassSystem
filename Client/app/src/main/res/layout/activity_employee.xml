@@ -19,31 +19,34 @@
 
         <EditText
             android:id="@+id/nameEditText"
-            android:layout_width="220dp"
+            android:layout_width="225dp"
             android:layout_height="wrap_content"
             android:theme="@style/EditTextStyle"
             android:hint="Name"
             android:inputType="text"
             app:layout_constraintBottom_toTopOf="@+id/lastNameEditText"
-            app:layout_constraintStart_toStartOf="@+id/imageView" />
+            app:layout_constraintStart_toStartOf="@+id/lastNameEditText" />
 
         <EditText
             android:id="@+id/lastNameEditText"
-            android:layout_width="220dp"
+            android:layout_width="225dp"
             android:layout_height="wrap_content"
             android:hint="Last name"
             android:theme="@style/EditTextStyle"
             android:inputType="text"
+            android:layout_marginBottom="5dp"
+            android:layout_marginStart="27dp"
             app:layout_constraintBottom_toTopOf="@+id/imageView"
-            app:layout_constraintStart_toStartOf="@+id/imageView" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <ImageView
             android:id="@+id/imageView"
             android:layout_width="220dp"
-            android:layout_height="300dp"
+            android:layout_height="295dp"
             android:layout_marginStart="30dp"
             android:layout_marginBottom="20dp"
             android:scaleType="fitCenter"
+            android:background="@drawable/border"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:srcCompat="@drawable/camera_image_white" />
@@ -63,7 +66,7 @@
             android:id="@+id/spinner_departments"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="20dp"
             android:spinnerMode="dialog"
             app:layout_constraintStart_toStartOf="parent"
@@ -73,7 +76,7 @@
             android:id="@+id/spinner_positions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="10dp"
             android:spinnerMode="dialog"
             app:layout_constraintStart_toStartOf="@+id/spinner_departments"

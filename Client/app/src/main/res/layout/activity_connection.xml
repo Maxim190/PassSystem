@@ -70,6 +70,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:theme="@style/TextViewStyle"
+            android:textSize="15sp"
             android:textColor="@color/colorWhite"
             android:text="Hold the button to unlock it"
             android:textAlignment="center" />

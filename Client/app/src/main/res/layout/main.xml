@@ -11,7 +11,7 @@
         android:id="@+id/top_constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="#FFFFFF"
+        android:background="@color/colorWhite"
         app:layout_constraintBottom_toTopOf="@+id/bottom_constraintLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,7 +21,7 @@
             android:id="@+id/imageView"
             android:layout_width="219dp"
             android:layout_height="170dp"
-            android:background="#FFFFFF"
+            android:background="@color/colorWhite"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -36,11 +36,10 @@
             android:layout_marginBottom="20dp"
             android:background="@drawable/button_pink_oval"
             android:drawableEnd="@drawable/x_mark"
-            android:drawablePadding="-20dp"
+            android:drawablePadding="20dp"
             android:text="Connection"
-            android:textAllCaps="false"
             android:textColor="@color/colorWhite"
-            android:textSize="25sp"
+            android:theme="@style/ButtonStyle"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -50,13 +49,12 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="10dp"
             android:background="@drawable/button_pink_oval"
-            android:text="+"
-            android:textAllCaps="false"
-            android:textColor="@color/colorWhite"
-            android:textSize="30sp"
-            app:layout_constraintStart_toEndOf="@id/button_connection"
+            android:drawableEnd="@drawable/plus_mark"
+            android:theme="@style/ButtonStyle"
             app:layout_constraintBottom_toBottomOf="@id/button_connection"
-            tools:layout_editor_absoluteY="441dp" />
+            app:layout_constraintStart_toEndOf="@id/button_connection"
+            app:layout_constraintTop_toTopOf="@+id/button_connection" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -77,7 +75,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginTop="10dp"
             android:text="Adele Petrovna"
-            android:textSize="25sp"
+            android:theme="@style/TextViewStyle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -86,7 +84,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="senior guard"
-            android:textSize="15sp"
+            android:theme="@style/TextViewStyle"
+            android:textSize="18sp"
             app:layout_constraintStart_toStartOf="@+id/textView_name"
             app:layout_constraintTop_toBottomOf="@id/textView_name"
             tools:ignore="MissingConstraints" />
@@ -98,21 +97,11 @@
             android:layout_marginTop="10dp"
             android:layout_marginEnd="10dp"
             android:background="@drawable/button_gray_oval"
+            android:theme="@style/ButtonStyle"
             android:text="Sign out"
-            android:textSize="25sp"
-            android:textAllCaps="false"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <eightbitlab.com.blurview.BlurView
-        android:id="@+id/blurView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

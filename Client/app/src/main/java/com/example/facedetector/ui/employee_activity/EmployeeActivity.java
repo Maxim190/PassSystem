@@ -3,20 +3,15 @@ package com.example.facedetector.ui.employee_activity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +19,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.facedetector.R;
-import com.example.facedetector.ui.authorization.AuthorizationHandler;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.PhotoManager;
 
@@ -52,7 +46,7 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_employee);
+        setContentView(R.layout.activity_employee);
 
         fieldName = findViewById(R.id.nameEditText);
         fieldLastName = findViewById(R.id.lastNameEditText);
@@ -174,7 +168,7 @@ public class EmployeeActivity extends AppCompatActivity implements EmployeeViewC
 
     @Override
     public void setPhoto(Bitmap bitmap) {
-        runOnUiThread(() -> imageView.setImageBitmap(bitmap));
+        runOnUiThread(()->imageView.setImageBitmap(bitmap));
     }
 
     private ArrayAdapter<String> getAdapter(List<String> data) {
