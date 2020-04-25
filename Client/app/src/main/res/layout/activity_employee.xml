@@ -99,6 +99,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_pink_oval"
                 android:theme="@style/ButtonStyle"
+                android:textColor="@color/colorWhite"
                 android:text="Add"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
@@ -111,6 +112,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_pink_oval"
                 android:theme="@style/ButtonStyle"
+                android:textColor="@color/colorWhite"
                 android:text="Edit"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/button_add_employee" />
@@ -122,6 +124,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_pink_oval"
                 android:theme="@style/ButtonStyle"
+                android:textColor="@color/colorWhite"
                 android:text="Delete"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/button_edit_employee" />
@@ -133,6 +136,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/button_pink_oval"
                 android:theme="@style/ButtonStyle"
+                android:textColor="@color/colorWhite"
                 android:text="&#8801;"/>
 
         </LinearLayout>

@@ -32,10 +32,10 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:textColor="@color/colorWhite"
+            android:theme="@style/TextViewStyle"
             android:text="Connection lost.\n It will be restored automatically. Otherwise, contact an administrator or enter a new server address"
             android:textAlignment="center"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:textSize="25sp" />
 
         <EditText
             android:id="@+id/editText_ip"
@@ -46,7 +46,6 @@
             android:layout_marginLeft="20dp"
             android:layout_weight="1"
             android:theme="@style/EditTextStyle"
-            android:ems="10"
             android:inputType="textPersonName"
             android:text="192.168.0.102"
             android:textAlignment="center" />
@@ -58,19 +57,19 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/button_gray_oval"
-            android:text="CONNECT"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:theme="@style/ButtonStyle"
+            android:text="Connect"
+            android:textColor="@color/colorWhite"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/linearLayout"
-            tools:layout_editor_absoluteY="69dp" />
+            app:layout_constraintTop_toBottomOf="@id/linearLayout" />
 
         <TextView
             android:id="@+id/textView_unlock_btn_inf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:theme="@style/TextViewStyle"
             android:textColor="@color/colorWhite"
             android:text="Hold the button to unlock it"
             android:textAlignment="center" />
