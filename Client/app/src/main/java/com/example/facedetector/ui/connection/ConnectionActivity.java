@@ -61,6 +61,11 @@ public class ConnectionActivity extends Activity implements ConnectionViewContra
     }
 
     @Override
+    public void setIp(String ip) {
+        ipField.setText(ip);
+    }
+
+    @Override
     public void displayLog(String msg) {
         runOnUiThread(()->log.append("\n" + msg));
     }

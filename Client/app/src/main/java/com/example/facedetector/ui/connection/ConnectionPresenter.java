@@ -14,6 +14,7 @@ public class ConnectionPresenter implements ConnectionStatusListener, Connection
         model = NetworkService.getIntent();
         model.setConnectionStatusListener(this);
         model.setLogListener(this);
+        currentView.setIp(NetworkService.DEFAULT_HOST_IP);
     }
 
     @Override
