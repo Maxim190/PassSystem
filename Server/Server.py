@@ -6,7 +6,6 @@ from threading import Thread
 from MsgHandler import RequestType
 from MsgHandler import DataType
 from MsgHandler import error_msg
-from MsgHandler import success_msg
 
 
 class Server:
@@ -70,7 +69,7 @@ class Server:
                             DataType.ACCESS: access_rights,
                             DataType.CODE: DataType.CODE_SUCCESS
                         })
-                    )
+                                           )
 
                     ClientManager.run(client, instances, access_rights)
 
