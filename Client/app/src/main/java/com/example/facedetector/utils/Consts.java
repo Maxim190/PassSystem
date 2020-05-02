@@ -15,11 +15,11 @@ public class Consts {
     public final static String DATA_TYPE_ID = "id";
     public final static String DATA_TYPE_NAME = "name";
     public final static String DATA_TYPE_LAST_NAME = "last_name";
-    public final static String DATA_TYPE_BIRTH = "birth";
     public final static String DATA_TYPE_DEPARTMENT = "department_name";
     public final static String DATA_TYPE_POSITION = "position_name";
     public final static String DATA_TYPE_BUNDLE = "bundle";
     public final static String DATA_TYPE_DATA = "data";
+    public final static String DATA_TYPE_ENC = "ENC";
 
     public final static String DATA_TYPE_CODE = "code";
     public final static String CODE_SUCCESS = "1";

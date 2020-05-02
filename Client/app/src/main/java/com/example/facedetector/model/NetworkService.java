@@ -10,6 +10,7 @@ import com.example.facedetector.model.employee.IndexedEmployee;
 import com.example.facedetector.model.employee.NotIndexedEmployee;
 import com.example.facedetector.ui.authorization.AuthorizationHandler;
 import com.example.facedetector.utils.Consts;
+import com.example.facedetector.utils.Cryptography;
 import com.example.facedetector.utils.JSONManager;
 
 import java.io.DataInputStream;
@@ -36,6 +37,7 @@ public class NetworkService {
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
 
+    private Cryptography coder;
     private List<ConnectionStatusListener> statusListeners;
     private List<ConnectionLogListener> logListeners;
     private Thread connectionThread;
@@ -49,7 +51,9 @@ public class NetworkService {
         return intent;
     }
 
-    private NetworkService() {}
+    private NetworkService() {
+        coder = new Cryptography();
+    }
 
     public void setConnectionStatusListener(ConnectionStatusListener listener) {
         if (statusListeners == null) {
@@ -72,21 +76,20 @@ public class NetworkService {
     }
 
     public void disconnect() {
-        if (socket == null) {
-            return;
-        }
         try {
             socket.close();
             inputStream.close();
             outputStream.close();
             isConnected = false;
-            interruptConnectionThread();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private boolean createSocket(String host, int port) throws IOException {
+        if (socket != null) {
+            disconnect();
+        }
         socket = new Socket(host, port);
         inputStream = new DataInputStream(socket.getInputStream());
         outputStream = new DataOutputStream(socket.getOutputStream());
@@ -102,9 +105,7 @@ public class NetworkService {
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void connect(String host) {
-        if (isConnected) {
-            disconnect();
-        }
+        interruptConnectionThread();
         connectionThread = new Thread(() -> {
             try {
                 log( "Connecting to " + host + ":" + DEFAULT_PORT);
@@ -121,8 +122,10 @@ public class NetworkService {
                     if (!isConnected && !Thread.interrupted()) {
                         log("Reconnect to " + host + ":" + DEFAULT_PORT + " Attempt:" + attempts);
                         setConnectionStatus(createSocket(host, DEFAULT_PORT));
-                        lastConnectionCheckTime = System.currentTimeMillis();
+                        setConnectionStatus(true);
                     } else {
+                        exchangeDHParams();
+                        lastConnectionCheckTime = System.currentTimeMillis();
                         if (AuthorizationHandler.getLogin() != null && AuthorizationHandler.getPassword() != null) {
                             authorize(AuthorizationHandler.getLogin(),
                                     AuthorizationHandler.getPassword(),
@@ -144,6 +147,35 @@ public class NetworkService {
         connectionThread.start();
     }
 
+    private void exchangeDHParams() {
+        try {
+            while (true) {
+                log("Changing cryptography params with server...");
+
+                byte[] body = "get_params".getBytes();
+                String jsonHeader = JSONManager.dump(new HashMap<String, String>() {{
+                    put("dh_params", String.valueOf(body.length));
+                }});
+                sendMsg(jsonHeader.getBytes(), body);
+
+                Map<String, byte[]> msg = receiveMsg(false);
+                if (Consts.CODE_ERROR.equals(msg.get(Consts.DATA_TYPE_CODE))) {
+                    log(new String(msg.values().iterator().next()));
+                    continue;
+                }
+
+                byte[] publicKey = coder.calcPublicKeyFromServerParams(msg);
+                jsonHeader = JSONManager.dump(new HashMap<String, String>() {{
+                    put("public_key", String.valueOf(publicKey.length));
+                }});
+                sendMsg(jsonHeader.getBytes(), publicKey);
+                break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private void checkConnectionUntilDisconnect() throws InterruptedException {
         AtomicBoolean receivedMsg = new AtomicBoolean(false);
         while (!Thread.interrupted()) {
@@ -155,12 +187,11 @@ public class NetworkService {
                 log( "Check connection status");
 
                 byte[] body = Consts.MSG_TYPE_CHECK.getBytes();
-                String jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
+                Map<String, String> jsonHeader = new HashMap<String, String>(){{
                     put(Consts.MSG_TYPE_CHECK, String.valueOf(body.length));
-                }});
-
+                }};
                 receivedMsg.set(false);
-                Thread thread = exchange(jsonHeader.getBytes(), body, (response)-> {
+                Thread thread = exchange(jsonHeader, body, (response)-> {
                     if (!response.containsKey("ERROR"))
                         receivedMsg.set(true);
                 });
@@ -172,6 +203,7 @@ public class NetworkService {
     }
 
     private void log(String msg) {
+        Log.i("PassSystem", msg);
         if (logListeners != null) {
             logListeners.forEach(i->{
                 if (i != null) {
@@ -214,26 +246,32 @@ public class NetworkService {
 
     private synchronized byte[] receiveTotalBytes(int size) throws IOException {
         byte[] bytes = new byte[size];
-        Log.e("PassSystem", "Waiting .." + size);
         inputStream.readFully(bytes);
         return bytes;
     }
 
-    private Map<String, byte[]> receiveMsg() throws IOException {
-        String rawHeader = new String(receiveBytes(64));
+    private Map<String, byte[]> receiveMsg(boolean decrypt) throws IOException {
+        String rawHeader = new String(
+                decrypt? coder.decrypt(receiveBytes(120)): receiveBytes(120));
         String jsonHeader = rawHeader.substring(0, rawHeader.indexOf('}') + 1);
         Map<String, String> header = JSONManager.parse(jsonHeader);
-
         if (header == null) {
             throw new IOException("Failed receiving data from server");
         }
 
-        int totalSize = header.values()
+        int totalSize;
+        if (decrypt) {
+            totalSize = Integer.parseInt(header.get(Consts.DATA_TYPE_ENC));
+            header.remove(Consts.DATA_TYPE_ENC);
+        }
+        else {
+            totalSize = header.values()
                 .stream()
                 .mapToInt(Integer::parseInt)
                 .sum();
+        }
 
-        byte[] body = receiveTotalBytes(totalSize);
+        byte[] body = decrypt? coder.decrypt(receiveTotalBytes(totalSize)) : receiveTotalBytes(totalSize);
 
         Map<String, byte[]> result = new LinkedHashMap<>();
         int iterator = 0;
@@ -247,10 +285,10 @@ public class NetworkService {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private synchronized void sendMsg(byte[] jsonHeader, byte[] body) throws IOException {
-        if (jsonHeader.length < 64) {
+    private synchronized void sendMsg(byte[] jsonHeader, byte[] body) throws Exception {
+        if (jsonHeader.length < 120) {
             jsonHeader = mergeArrays(jsonHeader, String.join("",
-                            Collections.nCopies((64 - jsonHeader.length), "x")).getBytes());
+                            Collections.nCopies((120 - jsonHeader.length), "_")).getBytes());
         }
         outputStream.write(jsonHeader);
         outputStream.flush();
@@ -265,12 +303,12 @@ public class NetworkService {
         byte[] employeeData = JSONManager.dump(employee.toHashMapExcludingPhoto()).getBytes();
         byte[] employeePhoto = employee.getPhoto();
 
-        String jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
+        Map<String, String> jsonHeader = new HashMap<String, String>(){{
             put(msgType, String.valueOf(employeeData.length));
             put(Consts.DATA_TYPE_PHOTO, String.valueOf(employeePhoto.length));
-        }});
+        }};
 
-        exchange(jsonHeader.getBytes(), mergeArrays(employeeData, employeePhoto), listener);
+        exchange(jsonHeader, mergeArrays(employeeData, employeePhoto), listener);
     }
 
     public void authorize(String login, String password, MsgListener listener) {
@@ -282,9 +320,9 @@ public class NetworkService {
             put(Consts.DATA_TYPE_PASSWORD, password);
         }}).getBytes();
 
-        byte[] jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
+        Map<String, String> jsonHeader = new HashMap<String, String>(){{
             put(Consts.MSG_TYPE_AUTHORIZE, String.valueOf(body.length));
-        }}).getBytes();
+        }};
 
         exchange(jsonHeader, body, listener);
     }
@@ -320,23 +358,27 @@ public class NetworkService {
     }
 
     private void handleAndSend(String msgType, byte[] body, MsgListener listener) {
-        String jsonHeader = JSONManager.dump(new HashMap<String, String>(){{
+        Map<String, String> jsonHeader = new HashMap<String, String>(){{
             put(msgType, String.valueOf(body.length));
-        }});
+        }};
 
-        exchange(jsonHeader.getBytes(), body, listener);
+        exchange(jsonHeader, body, listener);
     }
 
-    private Thread exchange(byte[] jsonHeader, byte[] body, MsgListener listener) {
-        Thread thread = new Thread(()->{
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private Thread exchange(Map<String, String> jsonHeader, byte[] body, MsgListener listener) {
+        Thread thread = new Thread(()-> {
             try {
                 lastConnectionCheckTime = System.currentTimeMillis();
                 if (!isConnected) {
                     throw new IOException("There's no connection");
                 }
-                sendMsg(jsonHeader, body);
-                listener.callback(receiveMsg());
-            } catch (IOException e) {
+                byte[] encBody = coder.encrypt(body);
+                jsonHeader.put(Consts.DATA_TYPE_ENC, String.valueOf(encBody.length));
+
+                sendMsg(coder.encrypt(JSONManager.dump(jsonHeader).getBytes()), encBody);
+                listener.callback(receiveMsg(true));
+            } catch (Exception e) {
                 setConnectionStatus(false);
                 listener.callback(buildErrorMsg(e.getMessage()));
             }
