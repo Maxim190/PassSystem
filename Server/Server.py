@@ -1,10 +1,15 @@
+import base64
 import json
 import socket
 import sys
 import ClientManager
+
 from threading import Thread
 
+from hashlib import sha256
+
 import Cryptography
+
 from MsgHandler import RequestType
 from MsgHandler import DataType
 from MsgHandler import error_msg
@@ -96,11 +101,11 @@ class Server:
                 access_rights = None
                 admin = instances.DATA_BASE.get_admin(array[DataType.LOGIN])
 
-                if admin is not None and array[DataType.PASSWORD] == admin[DataType.PASSWORD]:
+                if admin is not None and self.psw_equals(admin[DataType.PASSWORD], array[DataType.PASSWORD]):
                     access_rights = DataType.ACCESS_ADMIN
                 else:
                     viewer = instances.DATA_BASE.get_viewer(array[DataType.LOGIN])
-                    if viewer is not None and viewer[DataType.PASSWORD] == array[DataType.PASSWORD]:
+                    if viewer is not None and self.psw_equals(viewer[DataType.PASSWORD], array[DataType.PASSWORD]):
                         access_rights = DataType.ACCESS_VIEWER
 
                 if access_rights is None:
@@ -114,7 +119,7 @@ class Server:
                             DataType.CODE: DataType.CODE_SUCCESS
                         },
                         coder)
-                    )
+                                           )
 
                     ClientManager.run(client, instances, access_rights, coder)
 
@@ -125,3 +130,10 @@ class Server:
                 print("Server exception " + str(e))
                 ClientManager.send_msg(client, *ClientManager.build_response(
                     error_msg(RequestType.AUTHORIZE, str(e)), coder))
+
+    def psw_equals(self, from_db, verifiable):
+        dec_db_psw = base64.b64decode(from_db)
+        salt = dec_db_psw[-16:]
+        sha256().update(verifiable.encode("utf-8") + salt)
+        h_verifiable = sha256().digest() + salt
+        return dec_db_psw == h_verifiable

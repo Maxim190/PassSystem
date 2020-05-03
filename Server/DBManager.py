@@ -21,17 +21,41 @@ class DB:
 
         print("Connected to database")
 
+    def get_all_admins(self):
+        query = "SELECT * FROM admins"
+        self.cursor.execute(query)
+
+        return self.cursor.fetchall()
+
     def get_admin(self, login):
         query = "SELECT * FROM admins WHERE login='" + str(login) + "'"
         self.cursor.execute(query)
 
         return self.cursor.fetchone()
 
+    def set_admin_psw(self, password, login):
+        query = 'UPDATE admins SET password="{}" WHERE login="{}"'.format(str(password), str(login))
+        self.cursor.execute(query)
+
+        self.conn.commit()
+
+    def get_all_viewers(self):
+        query = "SELECT * FROM viewers"
+        self.cursor.execute(query)
+
+        return self.cursor.fetchall()
+
     def get_viewer(self, login):
         query = "SELECT * FROM viewers WHERE login='" + str(login) + "'"
         self.cursor.execute(query)
 
         return self.cursor.fetchone()
+
+    def set_viewer_psw(self, password, login):
+        query = 'UPDATE viewers SET password="{}" WHERE login="{}"'.format(str(password), str(login))
+        self.cursor.execute(query)
+
+        self.conn.commit()
 
     def get_next_employee_id(self):
         query = 'SELECT MAX(id) as id FROM employees'
