@@ -94,7 +94,7 @@ class Server:
 
                 if raw_data is None or RequestType.AUTHORIZE not in raw_data:
                     ClientManager.send_msg(client, *ClientManager.build_response(
-                        error_msg(RequestType.AUTHORIZE, "You are not authorized")), coder)
+                        error_msg(RequestType.AUTHORIZE, "You are not authorized"), coder))
                     continue
 
                 array = json.loads(raw_data[RequestType.AUTHORIZE])
@@ -110,7 +110,7 @@ class Server:
 
                 if access_rights is None:
                     ClientManager.send_msg(client, *ClientManager.build_response(
-                        error_msg(RequestType.AUTHORIZE, "Wrong login or password"))), coder
+                        error_msg(RequestType.AUTHORIZE, "Wrong login or password"), coder))
                 else:
                     ClientManager.send_msg(client, *ClientManager.build_response(
                         {
