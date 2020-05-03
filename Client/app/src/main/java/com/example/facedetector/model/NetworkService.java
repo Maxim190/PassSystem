@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class NetworkService {
 
     public static final String DEFAULT_HOST_IP = "192.168.0.103";
+    private static String BUFFER_HOST_IP = "";
     private static final int DEFAULT_PORT = 8000;
 
     private static NetworkService intent;
@@ -103,6 +104,15 @@ public class NetworkService {
         connectionThread.interrupt();
     }
 
+    public void connect() {
+        if (!BUFFER_HOST_IP.isEmpty()) {
+            connect(BUFFER_HOST_IP);
+        }
+        else {
+            connect(DEFAULT_HOST_IP);
+        }
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.N)
     public void connect(String host) {
         interruptConnectionThread();
@@ -124,8 +134,8 @@ public class NetworkService {
                         setConnectionStatus(createSocket(host, DEFAULT_PORT));
                         setConnectionStatus(true);
                     } else {
+                        BUFFER_HOST_IP = host;
                         exchangeDHParams();
-                        lastConnectionCheckTime = System.currentTimeMillis();
                         if (AuthorizationHandler.getLogin() != null && AuthorizationHandler.getPassword() != null) {
                             authorize(AuthorizationHandler.getLogin(),
                                     AuthorizationHandler.getPassword(),
@@ -286,6 +296,7 @@ public class NetworkService {
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     private synchronized void sendMsg(byte[] jsonHeader, byte[] body) throws Exception {
+        lastConnectionCheckTime = System.currentTimeMillis();
         if (jsonHeader.length < 120) {
             jsonHeader = mergeArrays(jsonHeader, String.join("",
                             Collections.nCopies((120 - jsonHeader.length), "_")).getBytes());

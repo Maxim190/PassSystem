@@ -19,7 +19,7 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
         this.currentView = currentView;
         model = NetworkService.getIntent();
         model.setConnectionStatusListener(this);
-        model.connect(NetworkService.DEFAULT_HOST_IP);
+        model.connect();
     }
 
     @Override
