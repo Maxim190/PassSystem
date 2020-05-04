@@ -39,6 +39,16 @@ public class AuthorizationPresenter implements AuthorizationViewContract.Present
         model.authorize(login, password, this);
     }
 
+    public static boolean reSignIn() {
+        if (AuthorizationHandler.getLogin() == null || AuthorizationHandler.getPassword() == null) {
+            return false;
+        }
+        NetworkService.getIntent().authorize(AuthorizationHandler.getLogin(),
+                AuthorizationHandler.getPassword(),
+                AuthorizationHandler::extractAccessRightData);
+        return true;
+    }
+
     @Override
     public void callback(Map<String, byte[]> data) {
         if (data.isEmpty()) {

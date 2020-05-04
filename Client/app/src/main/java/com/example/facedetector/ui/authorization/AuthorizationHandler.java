@@ -1,7 +1,6 @@
 package com.example.facedetector.ui.authorization;
 
 import android.os.Bundle;
-import android.util.Log;
 
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.JSONManager;
@@ -16,29 +15,6 @@ public class AuthorizationHandler {
     private static String login;
     private static String password;
     private static Bundle employeeBundle;
-
-    public interface AccessRightsListener {
-        void accessRightsChanged(String rightMode);
-    }
-
-    private static List<AccessRightsListener> listeners = new ArrayList<>();
-
-    public static void setAccessRightsChangeListener(AccessRightsListener listener) {
-        if (listener != null) {
-            listeners.add(listener);
-        }
-    }
-
-    private static void setRightMode(String newMode) {
-        if (!currentRightMode.equals(newMode)) {
-            currentRightMode = newMode == null ? "" : newMode;
-            listeners.forEach(v -> {
-                if (v != null) {
-                    v.accessRightsChanged(currentRightMode);
-                }
-            });
-        }
-    }
 
     private AuthorizationHandler(){
     }
@@ -67,6 +43,34 @@ public class AuthorizationHandler {
         return currentRightMode;
     }
 
+    public interface AccessRightsListener {
+        void accessRightsChanged(String rightMode);
+
+    }
+
+    private static List<AccessRightsListener> listeners = new ArrayList<>();
+
+    public static void setAccessRightsChangeListener(AccessRightsListener listener) {
+        if (listener != null) {
+            listeners.add(listener);
+        }
+    }
+
+    public static void setRightMode(String mode) {
+        currentRightMode = mode;
+    }
+
+    private static void setRightModeAndNotify(String newMode) {
+        if (!currentRightMode.equals(newMode)) {
+            currentRightMode = newMode == null ? "" : newMode;
+            listeners.forEach(v -> {
+                if (v != null) {
+                    v.accessRightsChanged(currentRightMode);
+                }
+            });
+        }
+    }
+
     public static void clearData() {
         login = null;
         password = null;
@@ -75,7 +79,7 @@ public class AuthorizationHandler {
 
     public static void extractAccessRightData(Map<String, byte[]> data) {
         if (data == null || data.isEmpty()) {
-            setRightMode("");
+            setRightModeAndNotify("");
         }
         else if (data.containsKey(Consts.DATA_TYPE_CODE)) {
             String code = JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE));
@@ -84,10 +88,10 @@ public class AuthorizationHandler {
                         new String(data.get(Consts.MSG_TYPE_AUTHORIZE)));
                 employeeBundle = new Bundle();
                 array.forEach(employeeBundle::putString);
-                setRightMode(JSONManager.parseToStr(data.get(Consts.DATA_TYPE_ACCESS_RIGHTS)));
+                setRightModeAndNotify(JSONManager.parseToStr(data.get(Consts.DATA_TYPE_ACCESS_RIGHTS)));
                 return;
             }
         }
-        setRightMode("");
+        setRightModeAndNotify("");
     }
 }

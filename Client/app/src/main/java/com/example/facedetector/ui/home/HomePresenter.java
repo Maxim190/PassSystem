@@ -4,12 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.example.facedetector.model.ConnectionStatusListener;
 import com.example.facedetector.model.MsgListener;
 import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.ui.authorization.AuthorizationActivity;
 import com.example.facedetector.ui.authorization.AuthorizationHandler;
+import com.example.facedetector.ui.authorization.AuthorizationPresenter;
 import com.example.facedetector.ui.connection.ConnectionActivity;
 import com.example.facedetector.ui.employee_activity.EmployeeActivity;
 import com.example.facedetector.utils.Bundlebuilder;
@@ -115,7 +117,6 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener,
         byte[] byteArray = stream.toByteArray();
 
         model.recognizeEmployee(byteArray, this);
-        currentView.setViewEnabled(false);
     }
 
     @Override
@@ -141,10 +142,15 @@ public class HomePresenter implements HomeInterface.Presenter, MsgListener,
             String errorRequest = data.keySet().iterator().next();
             String errorMsg = JSONManager.parseToStr(data.values().iterator().next());
 
-            currentView.displayText(errorMsg);
             if (Consts.MSG_TYPE_AUTHORIZE.equals(errorRequest)) {
-                signOut();
+                if (!AuthorizationPresenter.reSignIn()) {
+                    signOut();
+                }
+                else {
+                    errorMsg = "You have been re-authorized, please try again";
+                }
             }
+            currentView.displayText(errorMsg);
             return;
         }
         Bundle bundle = Bundlebuilder.build(data);

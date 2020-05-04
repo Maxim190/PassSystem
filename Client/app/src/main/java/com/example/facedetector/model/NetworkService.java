@@ -9,6 +9,7 @@ import com.example.facedetector.model.employee.Employee;
 import com.example.facedetector.model.employee.IndexedEmployee;
 import com.example.facedetector.model.employee.NotIndexedEmployee;
 import com.example.facedetector.ui.authorization.AuthorizationHandler;
+import com.example.facedetector.ui.authorization.AuthorizationPresenter;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.Cryptography;
 import com.example.facedetector.utils.JSONManager;
@@ -16,6 +17,10 @@ import com.example.facedetector.utils.JSONManager;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,15 +137,10 @@ public class NetworkService {
                     if (!isConnected && !Thread.interrupted()) {
                         log("Reconnect to " + host + ":" + DEFAULT_PORT + " Attempt:" + attempts);
                         setConnectionStatus(createSocket(host, DEFAULT_PORT));
-                        setConnectionStatus(true);
+                        AuthorizationHandler.setRightMode("");
                     } else {
                         BUFFER_HOST_IP = host;
                         exchangeDHParams();
-                        if (AuthorizationHandler.getLogin() != null && AuthorizationHandler.getPassword() != null) {
-                            authorize(AuthorizationHandler.getLogin(),
-                                    AuthorizationHandler.getPassword(),
-                                    AuthorizationHandler::extractAccessRightData);
-                        }
                         checkConnectionUntilDisconnect();
                     }
                 } catch (InterruptedException e) {
@@ -179,6 +179,7 @@ public class NetworkService {
                     put("public_key", String.valueOf(publicKey.length));
                 }});
                 sendMsg(jsonHeader.getBytes(), publicKey);
+                Log.i("PassSystem", socket.toString());
                 break;
             }
         } catch (Exception e) {
@@ -261,6 +262,7 @@ public class NetworkService {
     }
 
     private Map<String, byte[]> receiveMsg(boolean decrypt) throws IOException {
+        Log.i("PassSystem", "Receiving....");
         String rawHeader = new String(
                 decrypt? coder.decrypt(receiveBytes(120)): receiveBytes(120));
         String jsonHeader = rawHeader.substring(0, rawHeader.indexOf('}') + 1);
@@ -268,7 +270,6 @@ public class NetworkService {
         if (header == null) {
             throw new IOException("Failed receiving data from server");
         }
-
         int totalSize;
         if (decrypt) {
             totalSize = Integer.parseInt(header.get(Consts.DATA_TYPE_ENC));
@@ -290,7 +291,6 @@ public class NetworkService {
             result.put(key, Arrays.copyOfRange(body, iterator, iterator + nextPart));
             iterator += nextPart;
         }
-
         return result;
     }
 
@@ -326,6 +326,7 @@ public class NetworkService {
         if (login == null || password == null) {
             throw new NullPointerException("Authorisation Error: login or password is null");
         }
+
         byte[] body = JSONManager.dump(new HashMap<String, String>() {{
             put(Consts.DATA_TYPE_LOGIN, login);
             put(Consts.DATA_TYPE_PASSWORD, password);
@@ -391,6 +392,7 @@ public class NetworkService {
                 listener.callback(receiveMsg(true));
             } catch (Exception e) {
                 setConnectionStatus(false);
+                e.printStackTrace();
                 listener.callback(buildErrorMsg(e.getMessage()));
             }
         });

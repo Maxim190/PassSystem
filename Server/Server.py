@@ -32,12 +32,15 @@ class Server:
             sys.exit()
 
         s.listen()
-
+        all_clients = {}
         while True:
             print("Waiting for new client")
             conn, address = s.accept()
             print("Connected new client: " + str(conn) + "\n" + str(address))
-            Thread(target=self.authorization, args=(conn, instances, Cryptography.AESCipher())).start()
+            if conn.getsockname()[0] in all_clients:
+                all_clients[conn.getsockname()[0]].close()
+            all_clients[conn.getsockname()[0]] = conn
+            Thread(target=self.execute, args=(conn, instances, Cryptography.AESCipher())).start()
 
     def execute(self, client, instances, coder):
         self.dh_key_exchange(client, coder)
@@ -52,7 +55,9 @@ class Server:
 
                 if "dh_params" in raw_data:
                     ClientManager.send_msg(client, *ClientManager.build_response(coder.get_dh_params()))
+                    print("Waiting for client's public key")
                     client_key_msg = ClientManager.get_msg(client)
+                    print("Public key received")
                     if "public_key" not in client_key_msg:
                         raise Exception("Waiting for client public key for encryption")
                     coder.calc_shared_key(client_key_msg["public_key"])
@@ -66,26 +71,6 @@ class Server:
                     error_msg("dh_params", str(e))))
 
     def authorization(self, client, instances, coder):
-        while True:
-            try:
-                print("waiting dh params..")
-                raw_data = ClientManager.get_msg(client)
-                print("get msg " + str(raw_data))
-
-                if "dh_params" in raw_data:
-                    ClientManager.send_msg(client, *ClientManager.build_response(coder.get_dh_params()))
-                    client_key_msg = ClientManager.get_msg(client)
-                    if "public_key" not in client_key_msg:
-                        raise Exception("Waiting for client public key for encryption")
-                    coder.calc_shared_key(client_key_msg["public_key"])
-                    break
-                elif coder.shared_key is None:
-                    raise Exception("Missing client public key for encryption")
-
-            except Exception as e:
-                print("Server exception " + str(e))
-                ClientManager.send_msg(client, *ClientManager.build_response(
-                    error_msg("dh_params", str(e))))
         while True:
             print("client's authorization...")
             try:

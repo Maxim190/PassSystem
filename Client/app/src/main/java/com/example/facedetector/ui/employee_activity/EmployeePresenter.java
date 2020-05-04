@@ -9,6 +9,7 @@ import com.example.facedetector.model.NetworkService;
 import com.example.facedetector.model.employee.IndexedEmployee;
 import com.example.facedetector.model.employee.NotIndexedEmployee;
 import com.example.facedetector.ui.authorization.AuthorizationHandler;
+import com.example.facedetector.ui.authorization.AuthorizationPresenter;
 import com.example.facedetector.utils.Bundlebuilder;
 import com.example.facedetector.utils.Consts;
 import com.example.facedetector.utils.JSONManager;
@@ -180,7 +181,13 @@ public class EmployeePresenter implements EmployeeViewContract.Presenter, MsgLis
         }
         String code = JSONManager.parseToStr(data.get(Consts.DATA_TYPE_CODE));
         if (Consts.CODE_ERROR.equals(code)) {
-            currentView.displayMsg(new String(data.values().iterator().next()));
+            String errorMsg = new String(data.values().iterator().next());
+            if (Consts.MSG_TYPE_AUTHORIZE.equals(data.keySet().iterator().next())) {
+                if(AuthorizationPresenter.reSignIn()) {
+                    errorMsg = "You have been re-authorized, please try again";
+                }
+            }
+            currentView.displayMsg(errorMsg);
             return;
         }
 
